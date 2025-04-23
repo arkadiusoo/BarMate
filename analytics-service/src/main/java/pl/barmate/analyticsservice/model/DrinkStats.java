@@ -27,7 +27,7 @@ public class DrinkStats {
     @Column(nullable = false)
     private LocalDateTime preparedAt;
 
-    private String context; // eg. "party", "dinner", "alone", optional
+    private String context; // e.g. "party", "dinner", "alone", optional
 
     private Integer servings; // number of portions with one preparation
 
@@ -35,5 +35,5 @@ public class DrinkStats {
 
     private Boolean customRecipe; // if custom
 
-    private String location; // eg. "kitchen", "garden" optional
+    private String location; // e.g. "kitchen", "garden" optional
 }

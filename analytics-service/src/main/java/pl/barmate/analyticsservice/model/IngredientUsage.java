@@ -22,6 +22,10 @@ public class IngredientUsage {
     @Column(nullable = false)
     private String ingredientName;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private IngredientType ingredientType;
+
     @Column(nullable = false)
     private double amountUsed; // in milliliters or grams
 
@@ -33,4 +37,8 @@ public class IngredientUsage {
 
     @Column(nullable = false)
     private LocalDate date;
+
+    private BigDecimal unitCost; // unit cost (e.g. for 100ml)
+
+    private BigDecimal totalCost; // total cost of this amount
 }
