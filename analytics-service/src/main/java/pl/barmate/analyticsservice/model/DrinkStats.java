@@ -26,4 +26,14 @@ public class DrinkStats {
 
     @Column(nullable = false)
     private LocalDateTime preparedAt;
+
+    private String context; // eg. "party", "dinner", "alone", optional
+
+    private Integer servings; // number of portions with one preparation
+
+    private String preparationMethod; // shaken, stirred, blended, optional
+
+    private Boolean customRecipe; // if custom
+
+    private String location; // eg. "kitchen", "garden" optional
 }
