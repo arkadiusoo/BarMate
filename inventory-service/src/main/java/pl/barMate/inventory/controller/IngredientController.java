@@ -17,8 +17,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Ingredients", description = "Ingredient management API")
 public class IngredientController {
-
     private final IngredientService ingredientService;
+
 
     @PostMapping
     @Operation(summary = "Create a new ingredient")
