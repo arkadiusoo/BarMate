@@ -2,13 +2,13 @@ package pl.barMate.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.barMate.model.ShoppingItem;
+import pl.barMate.dto.ShoppingItemDTO;
+import pl.barMate.dto.ShoppingListDTO;
+import pl.barMate.dto.ShoppingItemDTO;
 import pl.barMate.model.ShoppingList;
-import pl.barMate.repository.ShoppingListRepository;
 import pl.barMate.service.ShoppingItemService;
 import pl.barMate.service.ShoppingListService;
 
@@ -24,40 +24,41 @@ public class ShoppingListController {
 
     @Operation(summary = "Create a new shopping list")
     @PostMapping
-    public ResponseEntity<ShoppingList> addShoppingList(@RequestBody ShoppingList shoppingList) {
-        ShoppingList createdList = shoppingListService.addShoppingList(shoppingList);
+    public ResponseEntity<ShoppingListDTO> addShoppingList(@RequestBody ShoppingListDTO shoppingListDTO) {
+        ShoppingListDTO createdList = shoppingListService.addShoppingList(shoppingListDTO);
         return new ResponseEntity<>(createdList, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Get a shopping list by id")
     @GetMapping("/{id}")
-    public ResponseEntity<ShoppingList> createShoppingList(@RequestBody Long id)
+    public ResponseEntity<ShoppingListDTO> createShoppingList(@PathVariable Long id)
     {
-        Optional<ShoppingList> shoppingList = shoppingListService.getShoppingListById(id);
-        return shoppingList.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        Optional<ShoppingListDTO> shoppingListDTO = shoppingListService.getShoppingListById(id);
+        return shoppingListDTO.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @Operation(summary = "Update a shopping list")
     @PutMapping("/{id}")
-    public ResponseEntity<ShoppingList> updateShoppingList(@RequestBody ShoppingList shoppingList, @PathVariable Long id)
+    public ResponseEntity<ShoppingListDTO> updateShoppingList(@RequestBody ShoppingListDTO shoppingListDTO, @PathVariable Long id)
     {
-        shoppingList.setId(id);
-        ShoppingList updatedList = shoppingListService.updateShoppingList(shoppingList);
+        shoppingListDTO.setId(id);
+        ShoppingListDTO updatedList = shoppingListService.updateShoppingList(shoppingListDTO);
         return new ResponseEntity<>(updatedList, HttpStatus.OK);
     }
 
     @Operation(summary = "Delete a shopping list")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ShoppingList> deleteShoppingList(@PathVariable Long id) {
+    public ResponseEntity<ShoppingListDTO> deleteShoppingList(@PathVariable Long id) {
         shoppingListService.deleteShoppingList(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Operation(summary = "Add an item to a shopping list")
     @PostMapping("/{id}/items")
-    public ResponseEntity<ShoppingItem> addItemToShoppingList(@PathVariable Long id, @RequestBody ShoppingItem shoppingItem) {
+    public ResponseEntity<ShoppingItemDTO> addItemToShoppingList(@PathVariable Long id, @RequestBody ShoppingItemDTO shoppingItemDTO) {
         // shoppingItem.setId(id);
-        ShoppingItem createdItem = shoppingItemService.addShoppingItem(shoppingItem);
+        ShoppingItemDTO createdItem = shoppingItemService.addShoppingItem(shoppingItemDTO);
+
         return new ResponseEntity<>(createdItem, HttpStatus.CREATED);
     }
 

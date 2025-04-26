@@ -21,7 +21,7 @@ public class ShoppingListDTO {
     private Long userId;
 
     @Schema(description = "List of items on the shopping list", example = "[[1, 'Flour', 2, 'kg', 'true', 2]]")
-    private List<ShoppingListDTO> items;
+    private List<ShoppingItemDTO> items;
 
     @Schema(description = "Time of creation of a list", example = "2025-04-26")
     private LocalDate createdAt;
