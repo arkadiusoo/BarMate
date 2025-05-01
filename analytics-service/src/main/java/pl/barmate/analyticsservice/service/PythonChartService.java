@@ -2,6 +2,7 @@ package pl.barmate.analyticsservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -15,27 +16,21 @@ public class PythonChartService {
 
     private final RestTemplate restTemplate;
 
-    private static final String CHART_SERVICE_URL = "http://chart-service/generate?type={chartType}";
+    @Value("${services.chart.url}")
+    private String chartServiceBaseUrl;
 
-    /**
-     * Sends JSON data to Python chart generator and receives chart as PNG.
-     *
-     * @param chartType type of chart: "activity", "top5", etc.
-     * @param data      JSON data required to generate the chart
-     * @return PNG image as byte array
-     */
     public byte[] generateChart(String chartType, Map<String, Object> data) {
+        String url = chartServiceBaseUrl + "/generate?type=" + chartType;
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(data, headers);
 
         ResponseEntity<byte[]> response = restTemplate.exchange(
-                CHART_SERVICE_URL,
+                url,
                 HttpMethod.POST,
                 request,
-                byte[].class,
-                chartType
+                byte[].class
         );
 
         return response.getBody();
