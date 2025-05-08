@@ -23,7 +23,8 @@
 	</developers>
 	<modules>
 		<module>inventory-service</module>
-	</modules>
+        <module>user-service</module>
+    </modules>
 	<scm>
 		<connection/>
 		<developerConnection/>
