@@ -5,9 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import pl.barmate.analyticsservice.model.DrinkStats;
-import pl.barmate.analyticsservice.model.IngredientUsage;
-import pl.barmate.analyticsservice.model.IngredientType;
 import pl.barmate.analyticsservice.repository.DrinkStatsRepository;
 import pl.barmate.analyticsservice.repository.IngredientUsageRepository;
 
@@ -17,9 +14,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;

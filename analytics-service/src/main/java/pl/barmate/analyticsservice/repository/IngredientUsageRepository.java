@@ -2,7 +2,6 @@ package pl.barmate.analyticsservice.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import pl.barmate.analyticsservice.model.IngredientUsage;
 
 import java.time.LocalDate;
 import java.util.List;

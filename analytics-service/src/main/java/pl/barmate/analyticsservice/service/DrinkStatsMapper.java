@@ -2,7 +2,6 @@ package pl.barmate.analyticsservice.service;
 
 import org.springframework.stereotype.Component;
 import pl.barmate.analyticsservice.dto.DrinkStatsDTO;
-import pl.barmate.analyticsservice.model.DrinkStats;
 
 @Component
 public class DrinkStatsMapper {
