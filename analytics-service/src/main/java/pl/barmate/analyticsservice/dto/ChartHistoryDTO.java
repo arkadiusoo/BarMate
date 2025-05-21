@@ -9,14 +9,13 @@ import pl.barmate.analyticsservice.model.ChartType;
 import java.util.Date;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChartDTO {
+@Builder
+public class ChartHistoryDTO {
     private Long id;
     private Long userId;
     private Date created;
     private String chartName;
     private ChartType chartType;
-    private String chartData;
 }

@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.barmate.analyticsservice.dto.ChartHistoryDTO;
 import pl.barmate.analyticsservice.model.ChartType;
 import pl.barmate.analyticsservice.service.ChartService;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,4 +31,9 @@ public class ChartController {
         byte[] image = chartService.regenerateChartFromHistory(chartId);
         return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(image);
     }
+
+    @GetMapping("/history")
+    public ResponseEntity<List<ChartHistoryDTO>> getUserHistory(@RequestParam Long userId) {
+    return ResponseEntity.ok(chartService.getUserChartHistory(userId));
+}
 }
