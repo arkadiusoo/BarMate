@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface ShoppingListRepository extends JpaRepository<ShoppingList, Long> {
     List<ShoppingList> findByUserId(Long userId);
+
+    boolean getAllById(Long id);
 }

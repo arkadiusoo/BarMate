@@ -22,13 +22,13 @@ public class ShoppingItem {
     @Column(nullable = false)
     private Double amount;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String unit;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Boolean checked = false;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Long userId;
 
     @ManyToOne

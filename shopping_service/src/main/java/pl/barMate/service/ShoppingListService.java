@@ -21,6 +21,7 @@ public class ShoppingListService {
     public ShoppingListDTO addShoppingList(ShoppingListDTO shoppingListDTO) {
         ShoppingList shoppingList = ShoppingListMapper.toEntity(shoppingListDTO);
         ShoppingList savedList = shoppingListRepository.save(shoppingList);
+        System.out.println(shoppingListDTO);
         return ShoppingListMapper.toDTO(savedList);
     }
 
@@ -39,9 +40,12 @@ public class ShoppingListService {
                 .stream()
                 .map(ShoppingListMapper::toDTO)
                 .collect(Collectors.toList());
+
     }
 
     public Optional<ShoppingListDTO> getShoppingListById(Long id) {
+        System.out.println("Szukam" + id);
+        //System.out.println(shoppingListRepository.findAll().stream().map(ShoppingListMapper::toDTO).collect(Collectors.toList()));
         return shoppingListRepository.findById(id)
                 .map(ShoppingListMapper::toDTO);
     }
