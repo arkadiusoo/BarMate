@@ -5,8 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import pl.barmate.analyticsservice.model.ChartType;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -19,20 +22,34 @@ public class PythonChartService {
     @Value("${services.chart.url}")
     private String chartServiceBaseUrl;
 
-    public byte[] generateChart(String chartType, Map<String, Object> data) {
-        String url = chartServiceBaseUrl + "/generate?type=" + chartType;
+    public byte[] generateChart(ChartType chartType, Object chartData) {
+        String url = chartServiceBaseUrl + "/generate";
+
+        Map<String, Object> requestMap = new HashMap<>();
+        requestMap.put("chartType", chartType.name()); // używamy dokładnej nazwy enuma
+        requestMap.put("data", chartData);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(data, headers);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestMap, headers);
 
-        ResponseEntity<byte[]> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                request,
-                byte[].class
-        );
+        try {
+            ResponseEntity<byte[]> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    request,
+                    byte[].class
+            );
 
-        return response.getBody();
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response.getBody();
+            } else {
+                log.error("Python chart service returned status: {}", response.getStatusCode());
+                throw new RuntimeException("Chart generation failed with status: " + response.getStatusCode());
+            }
+        } catch (RestClientException ex) {
+            log.error("Failed to call Python chart service: {}", ex.getMessage());
+            throw new RuntimeException("Python chart service error", ex);
+        }
     }
 }

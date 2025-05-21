@@ -7,7 +7,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
-import pl.barmate.analyticsservice.service.AnalyticsService;
 import pl.barmate.analyticsservice.service.PythonChartService;
 
 import java.math.BigDecimal;
