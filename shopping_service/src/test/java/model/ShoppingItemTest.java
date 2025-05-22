@@ -17,7 +17,8 @@ class ShoppingItemTest {
                 .amount(2.0)
                 .unit("liters")
                 .checked(false)
-                .userId(10L)
+                //.userId(10L)
+                .shoppingList(new ShoppingList())
                 .build();
 
         assertThat(item.getId()).isEqualTo(1L);
@@ -25,7 +26,7 @@ class ShoppingItemTest {
         assertThat(item.getAmount()).isEqualTo(2.0);
         assertThat(item.getUnit()).isEqualTo("liters");
         assertThat(item.getChecked()).isFalse();
-        assertThat(item.getUserId()).isEqualTo(10L);
+        assertThat(item.getShoppingList()).isNotNull();
     }
 
     @Test

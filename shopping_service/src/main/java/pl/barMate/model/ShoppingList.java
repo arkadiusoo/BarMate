@@ -1,5 +1,6 @@
 package pl.barMate.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,5 +23,6 @@ public class ShoppingList {
     private Long userId;
 
     @OneToMany(mappedBy = "shoppingList", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<ShoppingItem> items;
 }

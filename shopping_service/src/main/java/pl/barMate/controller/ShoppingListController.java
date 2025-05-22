@@ -35,13 +35,28 @@ public class ShoppingListController {
 
     @Operation(summary = "Get a shopping list by id")
     @GetMapping("/{id}")
-    public ResponseEntity<List<ShoppingListDTO>> getShoppingList(@PathVariable Long id)
+    public ResponseEntity<ShoppingListDTO> getShoppingList(@PathVariable Long id)
     {
         //Optional<ShoppingListDTO> shoppingListDTO = shoppingListService.getShoppingListById(id);
         //System.out.println(shoppingListDTO);
 
-        List<ShoppingListDTO> lists = shoppingListService.getShoppingListsByUserId(id);
-        return new ResponseEntity<>(lists, HttpStatus.OK);
+        Optional<ShoppingListDTO> list = shoppingListService.getShoppingListById(id);
+        return list.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+        //return shoppingListDTO.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @Operation(summary = "Get a shopping list by user id")
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<ShoppingListDTO>> getShoppingListByUser(@PathVariable Long id)
+    {
+        //Optional<ShoppingListDTO> shoppingListDTO = shoppingListService.getShoppingListById(id);
+        //System.out.println(shoppingListDTO);
+
+        List<ShoppingListDTO> list = shoppingListService.getShoppingListsByUserId(id);
+        return new ResponseEntity<>(list, HttpStatus.OK);
+        //return list.map(ResponseEntity::ok)
+          //      .orElseGet(() -> ResponseEntity.notFound().build());
         //return shoppingListDTO.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
@@ -94,5 +109,12 @@ public class ShoppingListController {
     public ResponseEntity<Void> removeItemFromShoppingList(@PathVariable Long id, @PathVariable Long itemId) {
         shoppingItemService.deleteShoppingItem(itemId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Operation(summary = "Get items from a specific shopping list")
+    @GetMapping("/{listId}/items")
+    public ResponseEntity<List<ShoppingItemDTO>> getItemsFromShoppingList(@PathVariable Long listId) {
+        List<ShoppingItemDTO> items = shoppingItemService.getItemsByShoppingListId(listId);
+        return new ResponseEntity<>(items, HttpStatus.OK);
     }
 }

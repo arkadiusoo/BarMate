@@ -2,130 +2,130 @@ package service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import pl.barMate.dto.ShoppingItemDTO;
 import pl.barMate.model.ShoppingItem;
 import pl.barMate.repository.ShoppingItemRepository;
-import pl.barMate.service.ShoppingItemMapper;
 import pl.barMate.service.ShoppingItemService;
+import pl.barMate.service.ShoppingListService;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-
 class ShoppingItemServiceTest {
 
     @Mock
     private ShoppingItemRepository shoppingItemRepository;
 
+    @Mock
+    private ShoppingListService shoppingListService;
+
     @InjectMocks
     private ShoppingItemService shoppingItemService;
-
-    private ShoppingItem shoppingItem;
-    private ShoppingItemDTO shoppingItemDTO;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-
-        shoppingItem = ShoppingItem.builder()
-                .id(1L)
-                .userId(1L)
-                .ingredientName("Milk")
-                .amount(2.0)
-                .unit("l")
-                .checked(false)
-                .build();
-
-        shoppingItemDTO = ShoppingItemMapper.toDTO(shoppingItem);
     }
 
     @Test
     void shouldAddShoppingItem() {
-        when(shoppingItemRepository.save(any(ShoppingItem.class))).thenReturn(shoppingItem);
+        // given
+        ShoppingItemDTO dto = new ShoppingItemDTO(1L, "Milk", 2.0, "liters", false, 1L);
+        ShoppingItem entity = new ShoppingItem(1L, "Milk", 2.0, "liters", false, null); // Zakładamy konstruktor
+        when(shoppingItemRepository.save(any(ShoppingItem.class))).thenReturn(entity);
 
-        ShoppingItemDTO result = shoppingItemService.addShoppingItem(shoppingItemDTO);
+        try (MockedStatic<pl.barMate.service.ShoppingItemMapper> mockedMapper = mockStatic(pl.barMate.service.ShoppingItemMapper.class)) {
+            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toEntity(dto)).thenReturn(entity);
+            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toDTO(entity)).thenReturn(dto);
 
-        assertThat(result).usingRecursiveComparison().isEqualTo(shoppingItemDTO);
-        verify(shoppingItemRepository, times(1)).save(any(ShoppingItem.class));
+            // when
+            ShoppingItemDTO result = shoppingItemService.addShoppingItem(dto);
+
+            // then
+            assertThat(result).isEqualTo(dto);
+            verify(shoppingItemRepository).save(entity);
+        }
     }
 
     @Test
     void shouldUpdateShoppingItem() {
-        when(shoppingItemRepository.save(any(ShoppingItem.class))).thenReturn(shoppingItem);
+        ShoppingItemDTO dto = new ShoppingItemDTO(1L, "Sugar", 1.0, "kg", true, 2L);
+        ShoppingItem entity = new ShoppingItem(1L, "Sugar", 1.0, "kg", true, null);
 
-        ShoppingItemDTO result = shoppingItemService.updateShoppingItem(shoppingItemDTO);
+        when(shoppingItemRepository.save(any())).thenReturn(entity);
 
-        assertThat(result).usingRecursiveComparison().isEqualTo(shoppingItemDTO);
-        verify(shoppingItemRepository, times(1)).save(any(ShoppingItem.class));
+        try (MockedStatic<pl.barMate.service.ShoppingItemMapper> mockedMapper = mockStatic(pl.barMate.service.ShoppingItemMapper.class)) {
+            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toEntity(dto)).thenReturn(entity);
+            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toDTO(entity)).thenReturn(dto);
+
+            ShoppingItemDTO result = shoppingItemService.updateShoppingItem(dto);
+
+            assertThat(result).isEqualTo(dto);
+            verify(shoppingItemRepository).save(entity);
+        }
     }
 
     @Test
     void shouldDeleteShoppingItem() {
-        Long id = 1L;
+        Long id = 5L;
 
         shoppingItemService.deleteShoppingItem(id);
 
-        verify(shoppingItemRepository, times(1)).deleteById(id);
-    }
-
-    @Test
-    void shouldGetItemsByShoppingListId() {
-        Long shoppingListId = 1L;
-        List<ShoppingItem> items = Arrays.asList(shoppingItem);
-
-        when(shoppingItemRepository.findByShoppingListId(shoppingListId)).thenReturn(items);
-
-        List<ShoppingItemDTO> result = shoppingItemService.getItemsByShoppingListId(shoppingListId);
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).usingRecursiveComparison().isEqualTo(shoppingItemDTO);
-        verify(shoppingItemRepository, times(1)).findByShoppingListId(shoppingListId);
-    }
-
-    @Test
-    void shouldGetItemsByUserId() {
-        Long userId = 1L;
-        List<ShoppingItem> items = Arrays.asList(shoppingItem);
-
-        when(shoppingItemRepository.findByUserId(userId)).thenReturn(items);
-
-        List<ShoppingItemDTO> result = shoppingItemService.getItemsByUserId(userId);
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).usingRecursiveComparison().isEqualTo(shoppingItemDTO);
-        verify(shoppingItemRepository, times(1)).findByUserId(userId);
+        verify(shoppingItemRepository).deleteById(id);
     }
 
     @Test
     void shouldGetShoppingItemById() {
-        Long id = 1L;
+        Long id = 3L;
+        ShoppingItem entity = new ShoppingItem(3L, "Bread", 1.0, "pcs", false, null);
+        ShoppingItemDTO dto = new ShoppingItemDTO(3L, "Bread", 1.0, "pcs", false, 1L);
 
-        when(shoppingItemRepository.findById(id)).thenReturn(Optional.of(shoppingItem));
+        when(shoppingItemRepository.findById(id)).thenReturn(Optional.of(entity));
 
-        Optional<ShoppingItemDTO> result = shoppingItemService.getShoppingItemById(id);
+        try (MockedStatic<pl.barMate.service.ShoppingItemMapper> mockedMapper = mockStatic(pl.barMate.service.ShoppingItemMapper.class)) {
+            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toDTO(entity)).thenReturn(dto);
 
-        assertThat(result).usingRecursiveComparison().isEqualTo(shoppingItemDTO);
-        verify(shoppingItemRepository, times(1)).findById(id);
+            Optional<ShoppingItemDTO> result = shoppingItemService.getShoppingItemById(id);
+
+            assertThat(result).isPresent().contains(dto);
+        }
+    }
+
+    @Test
+    void shouldGetItemsByShoppingListId() {
+        Long listId = 10L;
+        ShoppingItem entity = new ShoppingItem(1L, "Eggs", 12.0, "pcs", false, null);
+        ShoppingItemDTO dto = new ShoppingItemDTO(1L, "Eggs", 12.0, "pcs", false, listId);
+
+        when(shoppingItemRepository.findByShoppingListId(listId)).thenReturn(List.of(entity));
+
+        try (MockedStatic<pl.barMate.service.ShoppingItemMapper> mockedMapper = mockStatic(pl.barMate.service.ShoppingItemMapper.class)) {
+            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toDTO(entity)).thenReturn(dto);
+
+            List<ShoppingItemDTO> result = shoppingItemService.getItemsByShoppingListId(listId);
+
+            assertThat(result).containsExactly(dto);
+        }
     }
 
     @Test
     void shouldGetItemsByIngredientName() {
-        String ingredientName = "Milk";
-        List<ShoppingItem> items = Arrays.asList(shoppingItem);
+        String name = "Butter";
+        ShoppingItem entity = new ShoppingItem(2L, "Butter", 1.0, "pack", true, null);
+        ShoppingItemDTO dto = new ShoppingItemDTO(2L, "Butter", 1.0, "pack", true, 2L);
 
-        when(shoppingItemRepository.findByIngredientName(ingredientName)).thenReturn(items);
+        when(shoppingItemRepository.findByIngredientName(name)).thenReturn(List.of(entity));
 
-        List<ShoppingItemDTO> result = shoppingItemService.getItemsByIngredientName(ingredientName);
+        try (MockedStatic<pl.barMate.service.ShoppingItemMapper> mockedMapper = mockStatic(pl.barMate.service.ShoppingItemMapper.class)) {
+            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toDTO(entity)).thenReturn(dto);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).usingRecursiveComparison().isEqualTo(shoppingItemDTO);
-        verify(shoppingItemRepository, times(1)).findByIngredientName(ingredientName);
+            List<ShoppingItemDTO> result = shoppingItemService.getItemsByIngredientName(name);
+
+            assertThat(result).containsExactly(dto);
+        }
     }
 }

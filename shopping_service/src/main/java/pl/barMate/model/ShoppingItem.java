@@ -1,5 +1,7 @@
 package pl.barMate.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,11 +29,15 @@ public class ShoppingItem {
 
     @Column(nullable = true)
     private Boolean checked = false;
-
+    /*
     @Column(nullable = true)
     private Long userId;
+    */
 
     @ManyToOne
     @JoinColumn(name = "shopping_list_id")
+    @JsonBackReference
+    @JsonIgnoreProperties("shoppingList")
+
     private ShoppingList shoppingList;
 }

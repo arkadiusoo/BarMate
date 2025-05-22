@@ -2,27 +2,23 @@ package pl.barMate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.mockito.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import pl.barMate.dto.ShoppingItemDTO;
 import pl.barMate.dto.ShoppingListDTO;
-import pl.barMate.model.ShoppingItem;
-import pl.barMate.model.ShoppingList;
-import pl.barMate.service.ShoppingItemMapper;
 import pl.barMate.service.ShoppingItemService;
-import pl.barMate.service.ShoppingListMapper;
 import pl.barMate.service.ShoppingListService;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-public class ShoppingListControllerTest {
-
-    private MockMvc mockMvc;
+class ShoppingListControllerTest {
 
     @Mock
     private ShoppingListService shoppingListService;
@@ -33,92 +29,129 @@ public class ShoppingListControllerTest {
     @InjectMocks
     private ShoppingListController shoppingListController;
 
-    private ShoppingList shoppingList;
-    private ShoppingItem shoppingItem;
-
-    private ShoppingListDTO shoppingListDTO;
-    private ShoppingItemDTO shoppingItemDTO;
-
     @BeforeEach
-    public void setUp() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(shoppingListController).build();
-
-        // Initializing test data
-        shoppingList = new ShoppingList(1L, 2L, null);
-        shoppingItem = new ShoppingItem(1L, "Sugar", 1.5, "kg", false, 1L, shoppingList);
-
-        shoppingListDTO = ShoppingListMapper.toDTO(shoppingList);
-        shoppingItemDTO = ShoppingItemMapper.toDTO(shoppingItem);
     }
 
     @Test
-    public void shouldCreateShoppingList() throws Exception {
-        when(shoppingListService.addShoppingList(any(ShoppingListDTO.class))).thenReturn(shoppingListDTO);
+    void getShoppingList_ShouldReturnList_WhenFound() {
+        Long id = 1L;
+        ShoppingListDTO dto = new ShoppingListDTO(id, 10L, new ArrayList<>(), LocalDate.now());
+        when(shoppingListService.getShoppingListById(id)).thenReturn(Optional.of(dto));
 
-        mockMvc.perform(post("/shopping-list")
-                        .contentType("application/json")
-                        .content("{\"userId\": \"2\"}"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.userId").value(2));
+        ResponseEntity<ShoppingListDTO> response = shoppingListController.getShoppingList(id);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(dto);
     }
 
     @Test
-    public void shouldReturnShoppingListById() throws Exception {
-        when(shoppingListService.getShoppingListById(1L)).thenReturn(java.util.Optional.of(shoppingListDTO));
+    void getShoppingList_ShouldReturnNotFound_WhenNotFound() {
+        Long id = 1L;
+        when(shoppingListService.getShoppingListById(id)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/shopping-list/{id}", 1L))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+        ResponseEntity<ShoppingListDTO> response = shoppingListController.getShoppingList(id);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNull();
     }
 
     @Test
-    public void shouldReturnNotFoundForNonExistingShoppingList() throws Exception {
-        when(shoppingListService.getShoppingListById(2L)).thenReturn(java.util.Optional.empty());
+    void getShoppingListByUser_ShouldReturnLists() {
+        Long userId = 5L;
+        List<ShoppingListDTO> lists = List.of(
+                new ShoppingListDTO(1L, userId, new ArrayList<>(), LocalDate.now()),
+                new ShoppingListDTO(2L, userId, new ArrayList<>(), LocalDate.now())
+        );
+        when(shoppingListService.getShoppingListsByUserId(userId)).thenReturn(lists);
 
-        mockMvc.perform(get("/shopping-list/{id}", 2L))
-                .andExpect(status().isNotFound());
+        ResponseEntity<List<ShoppingListDTO>> response = shoppingListController.getShoppingListByUser(userId);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+        assertThat(response.getBody()).isEqualTo(lists);
     }
 
     @Test
-    public void shouldUpdateShoppingList() throws Exception {
-        when(shoppingListService.updateShoppingList(any(pl.barMate.dto.ShoppingListDTO.class))).thenReturn(shoppingListDTO);
+    void updateShoppingList_ShouldReturnUpdatedList() {
+        Long id = 3L;
+        ShoppingListDTO inputDto = new ShoppingListDTO(null, 10L, new ArrayList<>(), LocalDate.now());
+        ShoppingListDTO updatedDto = new ShoppingListDTO(id, 10L, new ArrayList<>(), LocalDate.now());
 
-        mockMvc.perform(put("/shopping-list/{id}", 1L)
-                        .contentType("application/json")
-                        .content("{\"userId\": \"2\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value(2));
+        when(shoppingListService.updateShoppingList(any())).thenReturn(updatedDto);
+
+        ResponseEntity<ShoppingListDTO> response = shoppingListController.updateShoppingList(inputDto, id);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(updatedDto);
+        assertThat(inputDto.getId()).isEqualTo(id);  // id powinno być ustawione w kontrolerze
     }
 
     @Test
-    public void shouldDeleteShoppingList() throws Exception {
-        doNothing().when(shoppingListService).deleteShoppingList(1L);
+    void deleteShoppingList_ShouldReturnNoContent() {
+        Long id = 10L;
 
-        mockMvc.perform(delete("/shopping-list/{id}", 1L))
-                .andExpect(status().isNoContent());
+        doNothing().when(shoppingListService).deleteShoppingList(id);
 
-        verify(shoppingListService, times(1)).deleteShoppingList(1L);
+        ResponseEntity<ShoppingListDTO> response = shoppingListController.deleteShoppingList(id);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        verify(shoppingListService).deleteShoppingList(id);
     }
 
     @Test
-    public void shouldAddItemToShoppingList() throws Exception {
-        when(shoppingItemService.addShoppingItem(any(pl.barMate.dto.ShoppingItemDTO.class))).thenReturn(shoppingItemDTO);
+    void createShoppingList_ShouldReturnCreatedList() {
+        Long userId = 15L;
+        ShoppingListDTO newList = new ShoppingListDTO(null, userId, new ArrayList<>(), LocalDate.now());
+        ShoppingListDTO savedList = new ShoppingListDTO(1L, userId, new ArrayList<>(), LocalDate.now());
 
-        mockMvc.perform(post("/shopping-list/{id}/items", 1L)
-                        .contentType("application/json")
-                        .content("{\"ingredientName\": \"Sugar\", \"amount\": 1.5, \"unit\": \"kg\"}"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.ingredientName").value("Sugar"));
+        when(shoppingListService.getShoppingListsByUserId(userId)).thenReturn(new ArrayList<>());
+        when(shoppingListService.addShoppingList(any())).thenReturn(savedList);
+
+        ResponseEntity<ShoppingListDTO> response = shoppingListController.createShoppingList(userId);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isEqualTo(savedList);
     }
 
     @Test
-    public void shouldRemoveItemFromShoppingList() throws Exception {
-        doNothing().when(shoppingItemService).deleteShoppingItem(1L);
+    void addItemToShoppingList_ShouldReturnCreatedItem() {
+        Long listId = 1L;
+        ShoppingItemDTO inputItem = new ShoppingItemDTO();
+        ShoppingItemDTO savedItem = new ShoppingItemDTO();
 
-        mockMvc.perform(delete("/shopping-list/{id}/items/{itemId}", 1L, 1L))
-                .andExpect(status().isNoContent());
+        when(shoppingItemService.addShoppingItem(inputItem)).thenReturn(savedItem);
 
-        verify(shoppingItemService, times(1)).deleteShoppingItem(1L);
+        ResponseEntity<ShoppingItemDTO> response = shoppingListController.addItemToShoppingList(listId, inputItem);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isEqualTo(savedItem);
+    }
+
+    @Test
+    void removeItemFromShoppingList_ShouldReturnNoContent() {
+        Long listId = 1L;
+        Long itemId = 2L;
+
+        doNothing().when(shoppingItemService).deleteShoppingItem(itemId);
+
+        ResponseEntity<Void> response = shoppingListController.removeItemFromShoppingList(listId, itemId);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        verify(shoppingItemService).deleteShoppingItem(itemId);
+    }
+
+    @Test
+    void getItemsFromShoppingList_ShouldReturnItems() {
+        Long listId = 3L;
+        List<ShoppingItemDTO> items = List.of(new ShoppingItemDTO(), new ShoppingItemDTO());
+
+        when(shoppingItemService.getItemsByShoppingListId(listId)).thenReturn(items);
+
+        ResponseEntity<List<ShoppingItemDTO>> response = shoppingListController.getItemsFromShoppingList(listId);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(items);
     }
 }

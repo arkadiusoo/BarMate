@@ -26,6 +26,7 @@ public class ShoppingItemDTO {
     @Schema(description = "Flag indicating whether the item has been purchased", example = "false")
     private Boolean checked;
 
-    @Schema(description = "Identifier of the user who owns the shopping item", example = "42")
-    private Long userId;
+    @Schema(description = "The shopping list", example = "42")
+    private Long shoppingListId;
+
 }

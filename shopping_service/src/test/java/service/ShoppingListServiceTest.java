@@ -1,92 +1,112 @@
 package service;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import pl.barMate.dto.ShoppingItemDTO;
+import org.mockito.*;
 import pl.barMate.dto.ShoppingListDTO;
-import pl.barMate.model.ShoppingItem;
 import pl.barMate.model.ShoppingList;
-import pl.barMate.repository.ShoppingItemRepository;
 import pl.barMate.repository.ShoppingListRepository;
-import pl.barMate.service.ShoppingItemMapper;
-import pl.barMate.service.ShoppingItemService;
 import pl.barMate.service.ShoppingListMapper;
 import pl.barMate.service.ShoppingListService;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class ShoppingListServiceTest {@Mock
-private ShoppingListRepository shoppingListRepository;
+class ShoppingListServiceTest {
 
-    private MockMvc mockMvc;
+    @Mock
+    private ShoppingListRepository shoppingListRepository;
 
     @InjectMocks
     private ShoppingListService shoppingListService;
 
-    private ShoppingList shoppingList;
-    private ShoppingItem shoppingItem;
-
-    private ShoppingListDTO shoppingListDTO;
-    private ShoppingItemDTO shoppingItemDTO;
-
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
-
-        // Initializing test data
-        shoppingList = new ShoppingList(1L, 2L, null);
-        shoppingItem = new ShoppingItem(1L, "Sugar", 1.5, "kg", false, 1L, shoppingList);
-
-        shoppingItemDTO = ShoppingItemMapper.toDTO(shoppingItem);
-        shoppingListDTO = ShoppingListMapper.toDTO(shoppingList);
     }
 
     @Test
-    public void shouldAddShoppingListTest() throws Exception {
-        when(shoppingListRepository.save(any(ShoppingList.class))).thenReturn(shoppingList);
+    void shouldAddShoppingList() {
+        // given
+        ShoppingListDTO dto = new ShoppingListDTO(1L, 10L, null, null);
+        ShoppingList entity = ShoppingList.builder().id(1L).userId(10L).items(null).build();
 
-        Optional<ShoppingListDTO> result = Optional.ofNullable(shoppingListService.addShoppingList(shoppingListDTO));
+        when(shoppingListRepository.save(any())).thenReturn(entity);
 
-        assertThat(result).isEqualTo(shoppingList);
-        verify(shoppingListRepository, times(1)).save(shoppingList);
+        try (MockedStatic<ShoppingListMapper> mockedMapper = mockStatic(ShoppingListMapper.class)) {
+            mockedMapper.when(() -> ShoppingListMapper.toEntity(dto)).thenReturn(entity);
+            mockedMapper.when(() -> ShoppingListMapper.toDTO(entity)).thenReturn(dto);
+
+            // when
+            ShoppingListDTO result = shoppingListService.addShoppingList(dto);
+
+            // then
+            assertThat(result).isEqualTo(dto);
+            verify(shoppingListRepository).save(entity);
+        }
     }
 
     @Test
-    public void shouldUpdateShoppingList() throws Exception {
-        when(shoppingListRepository.save(any(ShoppingList.class))).thenReturn(shoppingList);
-        Optional<ShoppingListDTO> result = Optional.ofNullable(shoppingListService.updateShoppingList(shoppingListDTO));
-        assertThat(result).isEqualTo(shoppingList);
-        verify(shoppingListRepository, times(1)).save(shoppingList);
+    void shouldUpdateShoppingList() {
+        ShoppingListDTO dto = new ShoppingListDTO(2L, 20L, null, null);
+        ShoppingList entity = ShoppingList.builder().id(2L).userId(20L).items(null).build();
+
+        when(shoppingListRepository.save(any())).thenReturn(entity);
+
+        try (MockedStatic<ShoppingListMapper> mockedMapper = mockStatic(ShoppingListMapper.class)) {
+            mockedMapper.when(() -> ShoppingListMapper.toEntity(dto)).thenReturn(entity);
+            mockedMapper.when(() -> ShoppingListMapper.toDTO(entity)).thenReturn(dto);
+
+            ShoppingListDTO result = shoppingListService.updateShoppingList(dto);
+
+            assertThat(result).isEqualTo(dto);
+            verify(shoppingListRepository).save(entity);
+        }
     }
 
     @Test
-    public void shouldDeleteShoppingList() throws Exception {
-        when(shoppingListRepository.existsById(shoppingList.getId())).thenReturn(true);
-        shoppingListService.deleteShoppingList(shoppingList.getId());
-        verify(shoppingListRepository, times(1)).deleteById(shoppingList.getId());
+    void shouldDeleteShoppingList() {
+        Long id = 5L;
+
+        shoppingListService.deleteShoppingList(id);
+
+        verify(shoppingListRepository).deleteById(id);
     }
 
     @Test
-    public void shouldGetShoppingListByIdTest() throws Exception {
-        Long shoppingListId = 1L;
+    void shouldGetShoppingListsByUserId() {
+        Long userId = 15L;
+        ShoppingList entity = ShoppingList.builder().id(1L).userId(userId).items(null).build();
+        ShoppingListDTO dto = new ShoppingListDTO(1L, userId, null, null);
 
-        when(shoppingListRepository.findById(shoppingListId)).thenReturn(Optional.of(shoppingList));
+        when(shoppingListRepository.findByUserId(userId)).thenReturn(List.of(entity));
 
-        Optional<ShoppingListDTO> result = shoppingListService.getShoppingListById(shoppingListId);
+        try (MockedStatic<ShoppingListMapper> mockedMapper = mockStatic(ShoppingListMapper.class)) {
+            mockedMapper.when(() -> ShoppingListMapper.toDTO(entity)).thenReturn(dto);
 
-        assertThat(result.get()).isEqualTo(shoppingList);
-        verify(shoppingListRepository, times(1)).findById(shoppingListId);
+            List<ShoppingListDTO> result = shoppingListService.getShoppingListsByUserId(userId);
+
+            assertThat(result).containsExactly(dto);
+        }
     }
 
+    @Test
+    void shouldGetShoppingListById() {
+        Long id = 99L;
+        ShoppingList entity = ShoppingList.builder().id(id).userId(999L).items(null).build();
+        ShoppingListDTO dto = new ShoppingListDTO(id, 999L, null, null);
+
+        when(shoppingListRepository.findById(id)).thenReturn(Optional.of(entity));
+
+        try (MockedStatic<ShoppingListMapper> mockedMapper = mockStatic(ShoppingListMapper.class)) {
+            mockedMapper.when(() -> ShoppingListMapper.toDTO(entity)).thenReturn(dto);
+
+            Optional<ShoppingListDTO> result = shoppingListService.getShoppingListById(id);
+
+            assertThat(result).isPresent().contains(dto);
+        }
+    }
 }

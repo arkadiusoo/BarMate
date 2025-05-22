@@ -9,7 +9,7 @@ import java.util.List;
 @Repository
 public interface ShoppingItemRepository extends JpaRepository<ShoppingItem, Long> {
     List<ShoppingItem> findByShoppingListId(Long shoppingListId);
-    List<ShoppingItem> findByUserId(Long userId);
+    //List<ShoppingItem> findByUserId(Long userId);
     List<ShoppingItem> findByIngredientName(String ingredientName);
 
 }
