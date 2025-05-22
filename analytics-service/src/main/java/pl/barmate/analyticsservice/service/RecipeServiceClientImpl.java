@@ -17,19 +17,19 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
 
     @Override
     public Object getMostPopularRecipies(Long userId) {
-//        return restTemplate.getForObject(baseUrl + "/recipes/popular?userId=" + userId, Object.class);
+//        return restTemplate.getForObject(baseUrl + "/recipes/popularDrinks?userId=" + userId, Object.class);
         return List.of("Mojito", "Margarita", "Mojito", "Martini", "Margarita");
     }
 
     @Override
     public Object getMostPopularIngredients(Long userId) {
-//        return restTemplate.getForObject(baseUrl + "/ingredients/popular?userId=" + userId, Object.class);
+//        return restTemplate.getForObject(baseUrl + "/recipes/popularIngredients?userId=" + userId, Object.class);
         return List.of("Lime", "Mint", "Lime", "Rum", "Mint");
     }
 
     @Override
     public Object getConsuptionInTime(Long userId) {
-//        return restTemplate.getForObject(baseUrl + "/stats/consumption?userId=" + userId, Object.class);
+//        return restTemplate.getForObject(baseUrl + "/recipes/consumption?userId=" + userId, Object.class);
         return Map.of(
                 "Mojito", "2024-06-01",
                 "Margarita", "2024-06-02",
