@@ -3,6 +3,7 @@ package pl.barmate.analyticsservice.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.barmate.analyticsservice.dto.ChartHistoryDTO;
 import pl.barmate.analyticsservice.dto.ChartMapper;
 import pl.barmate.analyticsservice.model.Chart;
@@ -83,7 +84,7 @@ private Object deserializeFromJson(String json, ChartType chartType) {
         throw new RuntimeException("JSON deserialization error", e);
     }
 }
-
+    @Transactional(readOnly = true)
     public List<ChartHistoryDTO> getUserChartHistory(Long userId) {
     return chartRepository.findAllByUserId(userId).stream()
             .map(ChartMapper::toHistoryDTO)
