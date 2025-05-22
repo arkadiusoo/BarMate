@@ -10,6 +10,4 @@ import java.util.List;
 @Repository
 public interface ChartRepository extends JpaRepository<Chart, Long> {
     List<Chart> findAllByUserId(Long userId);
-    List<Chart> findByUserIdAndDateBetween(Long userId, LocalDateTime start, LocalDateTime end);
-    List<Chart> findByDateBetween(LocalDateTime start, LocalDateTime end);
 }

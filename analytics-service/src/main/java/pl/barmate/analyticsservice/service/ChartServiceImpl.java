@@ -55,7 +55,7 @@ public class ChartServiceImpl implements ChartService {
                 .orElseThrow(() -> new IllegalArgumentException("Chart not found: " + chartId));
 
         // 1. pars json
-        Object chartData = deserializeFromJson(chart.getChartData());
+        Object chartData = deserializeFromJson(chart.getChartData(), chart.getChartType());
 
         // 2. upload to python chart service
         return pythonChartService.generateChart(chart.getChartType(), chartData);
@@ -70,13 +70,19 @@ public class ChartServiceImpl implements ChartService {
         }
     }
 
-    private Object deserializeFromJson(String json) {
-        try {
-            return new ObjectMapper().readValue(json, Map.class);
-        } catch (Exception e) {
-            throw new RuntimeException("JSON deserialization error", e);
-        }
+private Object deserializeFromJson(String json, ChartType chartType) {
+    try {
+        ObjectMapper mapper = new ObjectMapper();
+        return switch (chartType) {
+            case TheMostPopularRecipies, TheMostPopularIngredients ->
+                mapper.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
+            case ConsuptionInTime ->
+                mapper.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {});
+        };
+    } catch (Exception e) {
+        throw new RuntimeException("JSON deserialization error", e);
     }
+}
 
     public List<ChartHistoryDTO> getUserChartHistory(Long userId) {
     return chartRepository.findAllByUserId(userId).stream()
