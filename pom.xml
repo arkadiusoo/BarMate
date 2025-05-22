@@ -23,6 +23,9 @@
 	</developers>
 	<modules>
 		<module>inventory-service</module>
+		<module>
+			analytics-service
+		</module>
 	</modules>
 	<scm>
 		<connection/>
