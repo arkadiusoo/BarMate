@@ -1,0 +1,1 @@
+docker build -t javapostgres .;docker run --name javaDB -p 5433:5432 -v newVolume:/var/lib/postgresql/data javapostgres
