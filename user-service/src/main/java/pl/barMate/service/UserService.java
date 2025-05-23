@@ -1,6 +1,7 @@
 package pl.barMate.service;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 import pl.barMate.model.DrinkHistory;
 import pl.barMate.model.UserPreferences;
 import pl.barMate.model.UserProfile;
@@ -9,10 +10,20 @@ import pl.barMate.repository.UserProfileRepository;
 
 import java.util.List;
 
+@Service
 public class UserService {
 
     UserProfileRepository userProfileRepository;
     DrinkHistoryRepository drinkHistoryRepository;
+
+    public void addUserProfile(String keycloakId, String username, String email) {
+        UserProfile userProfile = new UserProfile();
+        userProfile.setUsername(username);
+        userProfile.setEmail(email);
+        userProfile.setKeycloakId(keycloakId);
+        userProfile.setUserPreferences(new UserPreferences());
+        userProfileRepository.save(userProfile);
+    }
 
     public UserProfile getUserProfile(String keycloakId) {
         return userProfileRepository.findByKeycloakId(keycloakId)
