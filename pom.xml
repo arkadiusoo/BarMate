@@ -23,9 +23,8 @@
 	</developers>
 	<modules>
 		<module>inventory-service</module>
-		<module>
-			analytics-service
-		</module>
+		<module>shopping_service</module>
+		<module>analytics-service</module>
 	</modules>
 	<scm>
 		<connection/>
