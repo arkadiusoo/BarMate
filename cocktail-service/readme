@@ -19,11 +19,8 @@ cocktail-service/src/main/java/pl/barmate/cocktails
     ├── CocktailApiApplication.java
     ├── config/RestClientConfig.java
     ├── controller/CocktailController.java
-    ├── exception/NotFoundException.java
-    ├── exception/GlobalExceptionHandler.java
     ├── model/ApiResponse.java
     ├── model/BriefCocktail.java
     ├── model/Cocktail.java
-    ├── model/CocktailDeserializer.java
     ├── model/CocktailDto.java
     └── service/CocktailService.java
