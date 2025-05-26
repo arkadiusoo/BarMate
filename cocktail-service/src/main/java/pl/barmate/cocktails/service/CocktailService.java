@@ -13,11 +13,9 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 @Service
 public class CocktailService {
@@ -120,21 +118,19 @@ public class CocktailService {
         return webClient.get()
                 .uri(uriBuilder -> {
                     var b = uriBuilder.path(path);
-                    if (param != null) {
-                        b.queryParam(param, value);
-                    }
+                    if (param != null) b.queryParam(param, value);
                     return b.build();
                 })
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<ApiResponse<Cocktail>>() {})
                 .flatMap(resp -> {
                     if (resp.getDrinks() == null || resp.getDrinks().isEmpty()) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Nie znaleziono drinków"));
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Brak wyników"));
                     }
-                    List<CocktailDto> dtos = new ArrayList<>(resp.getDrinks().size());
-                    for (Cocktail c : resp.getDrinks()) {
-                        dtos.add(mapToDto(c));
-                    }
+
+                    List<CocktailDto> dtos = resp.getDrinks().stream()
+                            .map(this::mapToDto)
+                            .toList();
                     return Mono.just(dtos);
                 });
     }
@@ -179,27 +175,7 @@ public class CocktailService {
                 });
     }
 
-    /** Map full Cocktail → CocktailDto, collecting up to 15 ingredients/measures */
     private CocktailDto mapToDto(Cocktail c) {
-        List<String> ingredients = new ArrayList<>();
-        List<String> measures = new ArrayList<>();
-
-        IntStream.rangeClosed(1, 15).forEach(i -> {
-            try {
-                Field fi = Cocktail.class.getDeclaredField("ingredient" + i);
-                Field fm = Cocktail.class.getDeclaredField("measure" + i);
-                fi.setAccessible(true);
-                fm.setAccessible(true);
-                String ing = (String) fi.get(c);
-                String m   = (String) fm.get(c);
-                if (ing != null && !ing.isBlank()) {
-                    ingredients.add(ing);
-                    measures.add(m != null ? m : "");
-                }
-            } catch (NoSuchFieldException | IllegalAccessException ignored) {
-            }
-        });
-
         return new CocktailDto(
                 c.getId(),
                 c.getName(),
@@ -208,8 +184,8 @@ public class CocktailService {
                 c.getGlass(),
                 c.getInstructions(),
                 c.getThumbnail(),
-                ingredients,
-                measures
+                c.getIngredients(),
+                c.getMeasures()
         );
     }
 }
