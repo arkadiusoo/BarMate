@@ -1,0 +1,26 @@
+Project: Cocktail API Microservice
+
+Supported TheCocktailDB Endpoints:
+  • Search by name:           /search.php?s={name}
+  • Search by first letter:   /search.php?f={letter}
+  • Lookup by ID:             /lookup.php?i={id}
+  • Random cocktail:          /random.php
+  • Filter by ingredient:     /filter.php?i={ingredient}
+  • Filter by category:       /filter.php?c={category}
+  • Filter by glass:          /filter.php?g={glass}
+  • List categories:          /list.php?c=list
+  • List glasses:             /list.php?g=list
+  • List ingredients:         /list.php?i=list
+  • List alcoholic filters:   /list.php?a=list
+
+Structure:
+
+cocktail-service/src/main/java/pl/barmate/cocktails
+    ├── CocktailApiApplication.java
+    ├── config/RestClientConfig.java
+    ├── controller/CocktailController.java
+    ├── model/ApiResponse.java
+    ├── model/BriefCocktail.java
+    ├── model/Cocktail.java
+    ├── model/CocktailDto.java
+    └── service/CocktailService.java
