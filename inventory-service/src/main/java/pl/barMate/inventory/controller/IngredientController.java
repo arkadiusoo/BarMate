@@ -71,6 +71,19 @@ public class IngredientController {
         }
     }
 
+    @PutMapping("/update-add-by-name")
+    @Operation(summary = "Add amount to ingredient by name")
+    public ResponseEntity<Ingredient> addIngredientAmount(
+            @RequestParam("name") @Parameter(description = "Name of the ingredient") String name,
+            @RequestParam("amount") @Parameter(description = "Amount to add") double amount) {
+        try {
+            return ResponseEntity.ok(ingredientService.addIngredientAmount(name, amount));
+        } catch (EntityNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
 
 
     @DeleteMapping("/{id}")

@@ -61,6 +61,18 @@ public class IngredientService {
         return ingredientRepository.save(existingIngredient);
     }
 
+    public Ingredient addIngredientAmount(String name, double amountToSubtract) {
+        Ingredient existingIngredient = ingredientRepository.findByName(name)
+                .orElseThrow(() -> new EntityNotFoundException("Ingredient not found with name: " + name));
+
+        if (existingIngredient.getAmount() < amountToSubtract) {
+            throw new IllegalArgumentException("Insufficient amount of ingredient: " + name);
+        }
+
+        existingIngredient.setAmount(existingIngredient.getAmount() + amountToSubtract);
+        return ingredientRepository.save(existingIngredient);
+    }
+
     public List<Ingredient> checkIngredientShortages(List<Ingredient> requestedIngredients) {
         return requestedIngredients.stream()
                 .map(requested -> {
