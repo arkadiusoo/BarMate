@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.barMate.dto.ShoppingItemDTO;
 import pl.barMate.dto.ShoppingListDTO;
 import pl.barMate.dto.ShoppingItemDTO;
+import pl.barMate.model.ShoppingItem;
 import pl.barMate.model.ShoppingList;
 import pl.barMate.service.ShoppingItemService;
 import pl.barMate.service.ShoppingListService;
@@ -69,6 +70,36 @@ public class ShoppingListController {
         return new ResponseEntity<>(updatedList, HttpStatus.OK);
     }
 
+    @Operation(summary = "Check off a shopping item")
+    @PutMapping("/{list_id}/item/{id}")
+    public ResponseEntity<ShoppingItem> checkOffShoppingItem(@PathVariable Long list_id, @PathVariable Long id)
+    {
+        shoppingListService.getShoppingListById(list_id).ifPresent(shoppingList -> {
+            shoppingItemService.getShoppingItemById(id).ifPresent(shoppingItem -> {
+                shoppingItem.setChecked(Boolean.TRUE);
+                shoppingItemService.updateShoppingItem(shoppingItem);
+            });
+        });
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Create a list with shoppingItems")
+    @PostMapping("/with-items")
+    public ResponseEntity<ShoppingList> createShoppingListWithItems(@RequestBody Long userId, @RequestBody List<ShoppingItemDTO> shoppingItemsDTO) {
+        ShoppingListDTO shoppingList = new ShoppingListDTO(
+                null,
+                userId,
+                new ArrayList<>(),
+                LocalDate.now()
+        );        //return new ResponseEntity<>(shoppingList, HttpStatus.CREATED);
+        ShoppingListDTO list = shoppingListService.addShoppingList(shoppingList);
+        for (ShoppingItemDTO shoppingItemDTO : shoppingItemsDTO) {
+            ShoppingItemDTO createdItem = shoppingItemService.addShoppingItem(shoppingItemDTO);
+            createdItem.setShoppingListId(list.getId());
+        }
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
     @Operation(summary = "Delete a shopping list")
     @DeleteMapping("/{id}")
     public ResponseEntity<ShoppingListDTO> deleteShoppingList(@PathVariable Long id) {
@@ -79,11 +110,6 @@ public class ShoppingListController {
     @Operation(summary = "Create a shopping list")
     @PostMapping()
     public ResponseEntity<ShoppingListDTO> createShoppingList(@RequestBody Long userId) {
-        List<ShoppingListDTO> userLists = shoppingListService.getShoppingListsByUserId(userId);
-
-        Long newId = userLists.isEmpty()
-                ? 1L
-                : userLists.get(userLists.size() - 1).getId() + 1;
 
         ShoppingListDTO shoppingList = new ShoppingListDTO(
                 null,
