@@ -16,6 +16,7 @@ import pl.barMate.inventory.model.IngredientCategory;
 import pl.barMate.inventory.service.IngredientService;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -168,7 +169,7 @@ class IngredientControllerTest {
         double updatedAmount = 3.0;
         Ingredient ingredient = new Ingredient(1L, name, IngredientCategory.OTHER, updatedAmount, "kg");
 
-        when(ingredientService.subtractIngredientAmount(name, 2.0)).thenReturn(ingredient);
+        when(ingredientService.subtractIngredientAmount(name, 2.0)).thenReturn(Optional.of(ingredient));
 
         // When + Then
         mockMvc.perform(put("/ingredients/update-by-name")

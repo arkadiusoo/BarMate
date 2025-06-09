@@ -121,10 +121,11 @@ class IngredientServiceTest {
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        Ingredient updatedIngredient = service.subtractIngredientAmount(ingredientName, amountToSubtract);
+        Optional<Ingredient> updatedIngredient = service.subtractIngredientAmount(ingredientName, amountToSubtract);
 
         // Then
-        assertThat(updatedIngredient.getAmount()).isEqualTo(3.0);
+        assertThat(updatedIngredient).isPresent();
+        assertThat(updatedIngredient.get().getAmount()).isEqualTo(3.0);
         verify(repository, times(1)).findByName(ingredientName);
         verify(repository, times(1)).save(ingredient);
     }

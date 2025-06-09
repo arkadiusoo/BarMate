@@ -63,10 +63,14 @@ public class IngredientController {
             @RequestParam("name") @Parameter(description = "Name of the ingredient") String name,
             @RequestParam("amount") @Parameter(description = "Amount to subtract") double amount) {
         try {
-            return ResponseEntity.ok(ingredientService.subtractIngredientAmount(name, amount));
+            return ingredientService.subtractIngredientAmount(name, amount)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.noContent().build());
         } catch (EntityNotFoundException ex) {
+            ex.printStackTrace();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }

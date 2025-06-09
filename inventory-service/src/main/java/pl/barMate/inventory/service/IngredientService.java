@@ -1,6 +1,7 @@
 package pl.barMate.inventory.service;
 
 import pl.barMate.inventory.model.Ingredient;
+import pl.barMate.inventory.model.IngredientCategory;
 import pl.barMate.inventory.repository.IngredientRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -49,28 +51,40 @@ public class IngredientService {
                 .orElseThrow(() -> new EntityNotFoundException("Ingredient not found with name: " + name));
     }
 
-    public Ingredient subtractIngredientAmount(String name, double amountToSubtract) {
+    public Optional<Ingredient> subtractIngredientAmount(String name, double amountToSubtract) {
         Ingredient existingIngredient = ingredientRepository.findByName(name)
                 .orElseThrow(() -> new EntityNotFoundException("Ingredient not found with name: " + name));
 
-        if (existingIngredient.getAmount() < amountToSubtract) {
+        double currentAmount = existingIngredient.getAmount();
+
+        if (currentAmount < amountToSubtract) {
             throw new IllegalArgumentException("Insufficient amount of ingredient: " + name);
         }
 
-        existingIngredient.setAmount(existingIngredient.getAmount() - amountToSubtract);
-        return ingredientRepository.save(existingIngredient);
+        if (currentAmount == amountToSubtract) {
+            ingredientRepository.delete(existingIngredient);
+            return Optional.empty();
+        } else {
+            existingIngredient.setAmount(currentAmount - amountToSubtract);
+            return Optional.of(ingredientRepository.save(existingIngredient));
+        }
     }
 
-    public Ingredient addIngredientAmount(String name, double amountToSubtract) {
-        Ingredient existingIngredient = ingredientRepository.findByName(name)
-                .orElseThrow(() -> new EntityNotFoundException("Ingredient not found with name: " + name));
-
-        if (existingIngredient.getAmount() < amountToSubtract) {
-            throw new IllegalArgumentException("Insufficient amount of ingredient: " + name);
+    public Ingredient addIngredientAmount(String name, double amountToAdd) {
+        Ingredient ingredient;
+        try {
+            ingredient = ingredientRepository.findByName(name)
+                    .orElseThrow(() -> new EntityNotFoundException("not found"));
+            ingredient.setAmount(ingredient.getAmount() + amountToAdd);
+        } catch (EntityNotFoundException e) {
+            ingredient = Ingredient.builder()
+                    .name(name)
+                    .amount(amountToAdd)
+                    .unit("other") // ustaw domyślną jednostkę, albo dodaj jako argument
+                    .category(IngredientCategory.OTHER) // ustaw domyślną kategorię, albo dodaj jako argument
+                    .build();
         }
-
-        existingIngredient.setAmount(existingIngredient.getAmount() + amountToSubtract);
-        return ingredientRepository.save(existingIngredient);
+        return ingredientRepository.save(ingredient);
     }
 
     public List<Ingredient> checkIngredientShortages(List<Ingredient> requestedIngredients) {
