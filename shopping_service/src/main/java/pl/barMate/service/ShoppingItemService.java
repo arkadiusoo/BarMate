@@ -2,6 +2,7 @@ package pl.barMate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import pl.barMate.dto.ShoppingItemDTO;
 import pl.barMate.dto.ShoppingListDTO;
 import pl.barMate.model.ShoppingItem;
@@ -19,6 +20,8 @@ public class ShoppingItemService {
 
     private final ShoppingItemRepository shoppingItemRepository;
     private final ShoppingListService shoppingListService;
+    private final RestTemplate restTemplate;
+
 
     public ShoppingItemDTO addShoppingItem(ShoppingItemDTO shoppingItemDTO) {
 

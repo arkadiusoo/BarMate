@@ -10,6 +10,8 @@ import pl.barMate.dto.ShoppingListDTO;
 import pl.barMate.dto.ShoppingItemDTO;
 import pl.barMate.model.ShoppingItem;
 import pl.barMate.model.ShoppingList;
+import pl.barMate.service.InventoryServiceClient;
+import pl.barMate.service.ShoppingItemMapper;
 import pl.barMate.service.ShoppingItemService;
 import pl.barMate.service.ShoppingListService;
 
@@ -25,6 +27,8 @@ import java.util.Optional;
 public class ShoppingListController {
     private final ShoppingListService shoppingListService;
     private final ShoppingItemService shoppingItemService;
+    private final InventoryServiceClient inventoryServiceClient;
+    private final ShoppingItemMapper shoppingItemMapper;
 
     /*
     @Operation(summary = "Create a new shopping list")
@@ -78,6 +82,7 @@ public class ShoppingListController {
             shoppingItemService.getShoppingItemById(id).ifPresent(shoppingItem -> {
                 shoppingItem.setChecked(Boolean.TRUE);
                 shoppingItemService.updateShoppingItem(shoppingItem);
+                inventoryServiceClient.updateAmount(shoppingItemService.getShoppingItemById(id).get());
             });
         });
         return new ResponseEntity<>(HttpStatus.OK);
