@@ -9,7 +9,6 @@ import pl.barmate.analyticsservice.model.ChartType;
 import pl.barmate.analyticsservice.service.ChartService;
 
 import static org.assertj.core.api.Assertions.assertThat;
-@Component
 public class ChartGenerationSteps {
 
     @Autowired
