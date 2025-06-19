@@ -1,6 +1,5 @@
 package pl.barmate.cocktails.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
@@ -10,7 +9,6 @@ import java.util.List;
  * przekazywane do klienta API.
  */
 @Data
-@AllArgsConstructor
 public class CocktailDto {
 
     /** Unikalny identyfikator drinka */
