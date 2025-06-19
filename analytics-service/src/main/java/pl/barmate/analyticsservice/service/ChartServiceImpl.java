@@ -24,6 +24,9 @@ public class ChartServiceImpl implements ChartService {
 
     @Override
     public byte[] generateChart(ChartType chartType, Long userId) {
+        if (chartType == null) {
+            throw new IllegalArgumentException("Chart type must be provided");
+        }
         // 1. get data from recipe-service
         Object chartInputData = switch (chartType) {
             case TheMostPopularRecipies -> recipeServiceClient.getMostPopularRecipies(userId);
