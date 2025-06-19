@@ -6,6 +6,8 @@ import org.mockito.*;
 import pl.barMate.dto.ShoppingItemDTO;
 import pl.barMate.model.ShoppingItem;
 import pl.barMate.repository.ShoppingItemRepository;
+import pl.barMate.repository.ShoppingListRepository;
+import pl.barMate.service.ShoppingItemMapper;
 import pl.barMate.service.ShoppingItemService;
 import pl.barMate.service.ShoppingListService;
 
@@ -21,7 +23,13 @@ class ShoppingItemServiceTest {
     private ShoppingItemRepository shoppingItemRepository;
 
     @Mock
+    private ShoppingListRepository shoppingListRepository;
+
+    @Mock
     private ShoppingListService shoppingListService;
+
+    @Mock
+    private ShoppingItemMapper shoppingItemMapper;
 
     @InjectMocks
     private ShoppingItemService shoppingItemService;
@@ -35,38 +43,65 @@ class ShoppingItemServiceTest {
     void shouldAddShoppingItem() {
         // given
         ShoppingItemDTO dto = new ShoppingItemDTO(1L, "Milk", 2.0, "liters", false, 1L);
-        ShoppingItem entity = new ShoppingItem(1L, "Milk", 2.0, "liters", false, null); // Zakładamy konstruktor
-        when(shoppingItemRepository.save(any(ShoppingItem.class))).thenReturn(entity);
+        ShoppingItem entity = new ShoppingItem(1L, "Milk", 2.0, "liters", false, null);
+        ShoppingItem savedEntity = new ShoppingItem(1L, "Milk", 2.0, "liters", false, null);
 
-        try (MockedStatic<pl.barMate.service.ShoppingItemMapper> mockedMapper = mockStatic(pl.barMate.service.ShoppingItemMapper.class)) {
-            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toEntity(dto)).thenReturn(entity);
-            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toDTO(entity)).thenReturn(dto);
+        when(shoppingItemMapper.toEntity(dto)).thenReturn(entity);
+        when(shoppingItemRepository.save(entity)).thenReturn(savedEntity);
+        when(shoppingItemMapper.toDTO(savedEntity)).thenReturn(dto);
 
-            // when
-            ShoppingItemDTO result = shoppingItemService.addShoppingItem(dto);
+        // when
+        ShoppingItemDTO result = shoppingItemService.addShoppingItem(dto);
 
-            // then
-            assertThat(result).isEqualTo(dto);
-            verify(shoppingItemRepository).save(entity);
-        }
+        // then
+        assertThat(result).isEqualTo(dto);
+        verify(shoppingItemMapper).toEntity(dto);
+        verify(shoppingItemRepository).save(entity);
+        verify(shoppingItemMapper).toDTO(savedEntity);
+    }
+
+    @Test
+    void shouldReturnNullWhenToEntityFails() {
+        ShoppingItemDTO dto = new ShoppingItemDTO(); // przykładowy DTO
+
+        // Zwracanie wyjątku
+        when(shoppingItemMapper.toEntity(dto)).thenThrow(new RuntimeException("Mapping failed"));
+
+        ShoppingItemDTO result = shoppingItemService.addShoppingItem(dto);
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void shouldReturnNullWhenSaveFails() {
+        ShoppingItemDTO dto = new ShoppingItemDTO();
+        ShoppingItem entity = new ShoppingItem();
+
+        when(shoppingItemMapper.toEntity(dto)).thenReturn(entity);
+        when(shoppingItemRepository.save(entity)).thenThrow(new RuntimeException("DB error"));
+
+        ShoppingItemDTO result = shoppingItemService.addShoppingItem(dto);
+
+        assertThat(result).isNull();
     }
 
     @Test
     void shouldUpdateShoppingItem() {
-        ShoppingItemDTO dto = new ShoppingItemDTO(1L, "Sugar", 1.0, "kg", true, 2L);
-        ShoppingItem entity = new ShoppingItem(1L, "Sugar", 1.0, "kg", true, null);
+        // given
+        ShoppingItemDTO dto = new ShoppingItemDTO(1L, "Milk", 2.0, "liters", false, 1L);
+        ShoppingItem entity = new ShoppingItem(1L, "Milk", 2.0, "liters", false, null);
+        ShoppingItem savedEntity = new ShoppingItem(1L, "Milk", 2.0, "liters", false, null);
 
-        when(shoppingItemRepository.save(any())).thenReturn(entity);
+        when(shoppingItemMapper.toEntity(dto)).thenReturn(entity);
+        when(shoppingItemRepository.save(entity)).thenReturn(savedEntity);
+        when(shoppingItemMapper.toDTO(savedEntity)).thenReturn(dto);
 
-        try (MockedStatic<pl.barMate.service.ShoppingItemMapper> mockedMapper = mockStatic(pl.barMate.service.ShoppingItemMapper.class)) {
-            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toEntity(dto)).thenReturn(entity);
-            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toDTO(entity)).thenReturn(dto);
-
-            ShoppingItemDTO result = shoppingItemService.updateShoppingItem(dto);
+        // when
+        ShoppingItemDTO result = shoppingItemService.updateShoppingItem(dto);
 
             assertThat(result).isEqualTo(dto);
             verify(shoppingItemRepository).save(entity);
-        }
+
     }
 
     @Test
@@ -86,13 +121,11 @@ class ShoppingItemServiceTest {
 
         when(shoppingItemRepository.findById(id)).thenReturn(Optional.of(entity));
 
-        try (MockedStatic<pl.barMate.service.ShoppingItemMapper> mockedMapper = mockStatic(pl.barMate.service.ShoppingItemMapper.class)) {
-            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toDTO(entity)).thenReturn(dto);
+        when(shoppingItemMapper.toDTO(entity)).thenReturn(dto);
 
             Optional<ShoppingItemDTO> result = shoppingItemService.getShoppingItemById(id);
 
             assertThat(result).isPresent().contains(dto);
-        }
     }
 
     @Test
@@ -103,13 +136,12 @@ class ShoppingItemServiceTest {
 
         when(shoppingItemRepository.findByShoppingListId(listId)).thenReturn(List.of(entity));
 
-        try (MockedStatic<pl.barMate.service.ShoppingItemMapper> mockedMapper = mockStatic(pl.barMate.service.ShoppingItemMapper.class)) {
-            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toDTO(entity)).thenReturn(dto);
+        when(shoppingItemMapper.toDTO(entity)).thenReturn(dto);
 
             List<ShoppingItemDTO> result = shoppingItemService.getItemsByShoppingListId(listId);
 
             assertThat(result).containsExactly(dto);
-        }
+
     }
 
     @Test
@@ -120,12 +152,10 @@ class ShoppingItemServiceTest {
 
         when(shoppingItemRepository.findByIngredientName(name)).thenReturn(List.of(entity));
 
-        try (MockedStatic<pl.barMate.service.ShoppingItemMapper> mockedMapper = mockStatic(pl.barMate.service.ShoppingItemMapper.class)) {
-            mockedMapper.when(() -> pl.barMate.service.ShoppingItemMapper.toDTO(entity)).thenReturn(dto);
+        when(shoppingItemMapper.toDTO(entity)).thenReturn(dto);
 
             List<ShoppingItemDTO> result = shoppingItemService.getItemsByIngredientName(name);
 
             assertThat(result).containsExactly(dto);
-        }
     }
 }

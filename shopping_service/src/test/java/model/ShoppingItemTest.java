@@ -30,6 +30,52 @@ class ShoppingItemTest {
     }
 
     @Test
+    void shouldCreateShoppingItemWithNoArguments() {
+        ShoppingItem shoppingItem = new ShoppingItem().builder().build();
+        assertThat(shoppingItem).isNotNull();
+    }
+
+    @Test
+    void shouldSetAndGetId() {
+        ShoppingItem shoppingItem = new ShoppingItem().builder().id(1L).build();
+        assertThat(shoppingItem.getId()).isEqualTo(1L);
+        shoppingItem.setId(2L);
+        assertThat(shoppingItem.getId()).isEqualTo(2L);
+    }
+
+    @Test
+    void shouldSetAndGetIngredientName() {
+        ShoppingItem shoppingItem = new ShoppingItem().builder().id(1L).ingredientName("water").build();
+        assertThat(shoppingItem.getIngredientName()).isEqualTo("water");
+        shoppingItem.setIngredientName("sparkling water");
+        assertThat(shoppingItem.getIngredientName()).isEqualTo("sparkling water");
+    }
+
+    @Test
+    void shouldSetAndGetAmount() {
+        ShoppingItem shoppingItem = new ShoppingItem().builder().id(1L).amount(2.0).build();
+        assertThat(shoppingItem.getAmount()).isEqualTo(2.0);
+        shoppingItem.setAmount(3.0);
+        assertThat(shoppingItem.getAmount()).isEqualTo(3.0);
+    }
+
+    @Test
+    void shouldSetAndGetUnit() {
+        ShoppingItem shoppingItem = new ShoppingItem().builder().id(1L).unit("l").build();
+        assertThat(shoppingItem.getUnit()).isEqualTo("l");
+        shoppingItem.setUnit("ml");
+        assertThat(shoppingItem.getUnit()).isEqualTo("ml");
+    }
+
+    @Test
+    void shouldSetAndGetChecked() {
+        ShoppingItem shoppingItem = new ShoppingItem().builder().id(1L).checked(true).build();
+        assertThat(shoppingItem.getChecked()).isTrue();
+        shoppingItem.setChecked(false);
+        assertThat(shoppingItem.getChecked()).isFalse();
+    }
+
+    @Test
     void shouldSetAndGetShoppingList() {
         ShoppingList list = ShoppingList.builder()
                 .id(5L)

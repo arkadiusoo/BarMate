@@ -1,5 +1,6 @@
 package pl.barMate.controller;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -38,7 +39,11 @@ class ShoppingListControllerTest {
     void getShoppingList_ShouldReturnList_WhenFound() {
         Long id = 1L;
         ShoppingListDTO dto = new ShoppingListDTO(id, 10L, new ArrayList<>(), LocalDate.now());
-        when(shoppingListService.getShoppingListById(id)).thenReturn(Optional.of(dto));
+        try {
+            when(shoppingListService.getShoppingListById(id)).thenReturn(Optional.of(dto));
+        } catch (Exception e) {
+            Assertions.fail();
+        }
 
         ResponseEntity<ShoppingListDTO> response = shoppingListController.getShoppingList(id);
 
@@ -49,7 +54,11 @@ class ShoppingListControllerTest {
     @Test
     void getShoppingList_ShouldReturnNotFound_WhenNotFound() {
         Long id = 1L;
-        when(shoppingListService.getShoppingListById(id)).thenReturn(Optional.empty());
+        try {
+            when(shoppingListService.getShoppingListById(id)).thenReturn(Optional.empty());
+        } catch (Exception e) {
+            Assertions.fail();
+        }
 
         ResponseEntity<ShoppingListDTO> response = shoppingListController.getShoppingList(id);
 
@@ -64,9 +73,18 @@ class ShoppingListControllerTest {
                 new ShoppingListDTO(1L, userId, new ArrayList<>(), LocalDate.now()),
                 new ShoppingListDTO(2L, userId, new ArrayList<>(), LocalDate.now())
         );
-        when(shoppingListService.getShoppingListsByUserId(userId)).thenReturn(lists);
+        try {
+            when(shoppingListService.getShoppingListsByUserId(userId)).thenReturn(lists);
+        } catch (Exception e) {
+            Assertions.fail();
+        }
 
-        ResponseEntity<List<ShoppingListDTO>> response = shoppingListController.getShoppingListByUser(userId);
+        ResponseEntity<List<ShoppingListDTO>> response = null;
+        try {
+            response = shoppingListController.getShoppingListByUser(userId);
+        } catch (Exception e) {
+            Assertions.fail();
+        }
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).hasSize(2);
@@ -79,9 +97,18 @@ class ShoppingListControllerTest {
         ShoppingListDTO inputDto = new ShoppingListDTO(null, 10L, new ArrayList<>(), LocalDate.now());
         ShoppingListDTO updatedDto = new ShoppingListDTO(id, 10L, new ArrayList<>(), LocalDate.now());
 
-        when(shoppingListService.updateShoppingList(any())).thenReturn(updatedDto);
+        try {
+            when(shoppingListService.updateShoppingList(any())).thenReturn(updatedDto);
+        } catch (Exception e) {
+            Assertions.fail();
+        }
 
-        ResponseEntity<ShoppingListDTO> response = shoppingListController.updateShoppingList(inputDto, id);
+        ResponseEntity<ShoppingListDTO> response = null;
+        try {
+            response = shoppingListController.updateShoppingList(inputDto, id);
+        } catch (Exception e) {
+            Assertions.fail();
+        }
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(updatedDto);
@@ -92,12 +119,20 @@ class ShoppingListControllerTest {
     void deleteShoppingList_ShouldReturnNoContent() {
         Long id = 10L;
 
-        doNothing().when(shoppingListService).deleteShoppingList(id);
+        try {
+            doNothing().when(shoppingListService).deleteShoppingList(id);
+        } catch (Exception e) {
+            Assertions.fail();
+        }
 
         ResponseEntity<ShoppingListDTO> response = shoppingListController.deleteShoppingList(id);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        verify(shoppingListService).deleteShoppingList(id);
+        try {
+            verify(shoppingListService).deleteShoppingList(id);
+        } catch (Exception e) {
+            Assertions.fail();
+        }
     }
 
     @Test
@@ -106,8 +141,16 @@ class ShoppingListControllerTest {
         ShoppingListDTO newList = new ShoppingListDTO(null, userId, new ArrayList<>(), LocalDate.now());
         ShoppingListDTO savedList = new ShoppingListDTO(1L, userId, new ArrayList<>(), LocalDate.now());
 
-        when(shoppingListService.getShoppingListsByUserId(userId)).thenReturn(new ArrayList<>());
-        when(shoppingListService.addShoppingList(any())).thenReturn(savedList);
+        try {
+            when(shoppingListService.getShoppingListsByUserId(userId)).thenReturn(new ArrayList<>());
+        } catch (Exception e) {
+            Assertions.fail();
+        }
+        try {
+            when(shoppingListService.addShoppingList(any())).thenReturn(savedList);
+        } catch (Exception e) {
+            Assertions.fail();
+        }
 
         ResponseEntity<ShoppingListDTO> response = shoppingListController.createShoppingList(userId);
 

@@ -19,18 +19,17 @@ import java.util.stream.Collectors;
 public class ShoppingItemService {
 
     private final ShoppingItemRepository shoppingItemRepository;
-    private final ShoppingListService shoppingListService;
-    private final RestTemplate restTemplate;
+    private final ShoppingItemMapper shoppingItemMapper;
+    //private final ShoppingItemMapper shoppingItemMapper;
 
 
     public ShoppingItemDTO addShoppingItem(ShoppingItemDTO shoppingItemDTO) {
 
         try
         {
-            ShoppingItem shoppingItem = ShoppingItemMapper.toEntity(shoppingItemDTO);
-            System.out.println(shoppingItem);
+            ShoppingItem shoppingItem = shoppingItemMapper.toEntity(shoppingItemDTO);
             ShoppingItem savedItem = shoppingItemRepository.save(shoppingItem);
-            return ShoppingItemMapper.toDTO(savedItem);
+            return shoppingItemMapper.toDTO(savedItem);
 
         }
         catch (Exception e)
@@ -38,20 +37,12 @@ public class ShoppingItemService {
             e.printStackTrace();
             return null;
         }
-        /*
-        Long shoppingListId = shoppingItemDTO.getShoppingListId();
-        Optional<ShoppingListDTO> list = shoppingListService.getShoppingListById(shoppingListId);
-        List<ShoppingItemDTO> itemList = getItemsByShoppingListId(shoppingListId);
-        itemList.add(shoppingItemDTO);
-        ShoppingListDTO newShoppingList = shoppingListService.updateShoppingList()
-
-        shoppingListService.updateShoppingList()*/
     }
 
     public ShoppingItemDTO updateShoppingItem(ShoppingItemDTO shoppingItemDTO) {
-        ShoppingItem shoppingItem = ShoppingItemMapper.toEntity(shoppingItemDTO);
+        ShoppingItem shoppingItem = shoppingItemMapper.toEntity(shoppingItemDTO);
         ShoppingItem updatedItem = shoppingItemRepository.save(shoppingItem);
-        return ShoppingItemMapper.toDTO(updatedItem);
+        return shoppingItemMapper.toDTO(updatedItem);
     }
 
     public void deleteShoppingItem(Long id) {
@@ -61,7 +52,7 @@ public class ShoppingItemService {
     public List<ShoppingItemDTO> getItemsByShoppingListId(Long shoppingListId) {
         return shoppingItemRepository.findByShoppingListId(shoppingListId)
                 .stream()
-                .map(ShoppingItemMapper::toDTO)
+                .map(shoppingItemMapper::toDTO)
                 .collect(Collectors.toList());
     }
     /*
@@ -74,13 +65,13 @@ public class ShoppingItemService {
     */
     public Optional<ShoppingItemDTO> getShoppingItemById(Long id) {
         return shoppingItemRepository.findById(id)
-                .map(ShoppingItemMapper::toDTO);
+                .map(shoppingItemMapper::toDTO);
     }
 
     public List<ShoppingItemDTO> getItemsByIngredientName(String ingredientName) {
         return shoppingItemRepository.findByIngredientName(ingredientName)
                 .stream()
-                .map(ShoppingItemMapper::toDTO)
+                .map(shoppingItemMapper::toDTO)
                 .collect(Collectors.toList());
     }
 }

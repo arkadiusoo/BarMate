@@ -6,6 +6,7 @@ import pl.barMate.model.ShoppingItem;
 import pl.barMate.model.ShoppingList;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +22,28 @@ class ShoppingListTest {
 
         assertThat(list.getId()).isEqualTo(5L);
         assertThat(list.getUserId()).isEqualTo(10L);
+    }
+
+    @Test
+    void shouldCreateShoppingListWithNoArguments() {
+        ShoppingList list = ShoppingList.builder().build();
+        assertThat(list).isNotNull();
+    }
+
+    @Test
+    void shouldSetAndGetId() {
+        ShoppingList list = ShoppingList.builder().id(1L).build();
+        assertThat(list.getId()).isEqualTo(1L);
+        list.setId(2L);
+        assertThat(list.getId()).isEqualTo(2L);
+    }
+
+    @Test
+    void shouldSetAndGetUserId() {
+        ShoppingList list = ShoppingList.builder().userId(1L).build();
+        assertThat(list.getUserId()).isEqualTo(1L);
+        list.setUserId(2L);
+        assertThat(list.getUserId()).isEqualTo(2L);
     }
 
     @Test

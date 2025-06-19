@@ -17,37 +17,57 @@ import java.util.stream.Collectors;
 public class ShoppingListService {
 
     private final ShoppingListRepository shoppingListRepository;
+    private final ShoppingListMapper shoppingListMapper;
 
-    public ShoppingListDTO addShoppingList(ShoppingListDTO shoppingListDTO) {
-        ShoppingList shoppingList = ShoppingListMapper.toEntity(shoppingListDTO);
-        ShoppingList savedList = shoppingListRepository.save(shoppingList);
-        System.out.println(shoppingListDTO);
-        return ShoppingListMapper.toDTO(savedList);
+    public ShoppingListDTO addShoppingList(ShoppingListDTO shoppingListDTO) throws Exception {
+        try
+        {
+            ShoppingList shoppingList = shoppingListMapper.toEntity(shoppingListDTO);
+            ShoppingList savedList = shoppingListRepository.save(shoppingList);
+            return shoppingListMapper.toDTO(savedList);
+        } catch (Exception ex) {
+            throw new Exception("Failed to add a shopping list");
+        }
     }
 
-    public ShoppingListDTO updateShoppingList(ShoppingListDTO shoppingListDTO) {
-        ShoppingList shoppingList = ShoppingListMapper.toEntity(shoppingListDTO);
-        ShoppingList updatedList = shoppingListRepository.save(shoppingList);
-        return ShoppingListMapper.toDTO(updatedList);
+    public ShoppingListDTO updateShoppingList(ShoppingListDTO shoppingListDTO) throws Exception {
+        try {
+            ShoppingList shoppingList = shoppingListMapper.toEntity(shoppingListDTO);
+            ShoppingList updatedList = shoppingListRepository.save(shoppingList);
+            return shoppingListMapper.toDTO(updatedList);
+        } catch (Exception e) {
+            throw new Exception("Failed to update a shopping list");
+        }
     }
 
-    public void deleteShoppingList(Long id) {
-        shoppingListRepository.deleteById(id);
+    public void deleteShoppingList(Long id) throws Exception {
+        try {
+            shoppingListRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new Exception("Failed to delete a shopping list");
+        }
     }
 
-    public List<ShoppingListDTO> getShoppingListsByUserId(Long userId) {
-        return shoppingListRepository.findByUserId(userId)
-                .stream()
-                .map(ShoppingListMapper::toDTO)
-                .collect(Collectors.toList());
+    public List<ShoppingListDTO> getShoppingListsByUserId(Long userId) throws Exception {
+        try {
+            return shoppingListRepository.findByUserId(userId)
+                    .stream()
+                    .map(shoppingListMapper::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new Exception("Failed to get shopping lists for an id");
+        }
 
     }
 
-    public Optional<ShoppingListDTO> getShoppingListById(Long id) {
-        System.out.println("Szukam" + id);
+    public Optional<ShoppingListDTO> getShoppingListById(Long id) throws Exception {
         //System.out.println(shoppingListRepository.findAll().stream().map(ShoppingListMapper::toDTO).collect(Collectors.toList()));
-        return shoppingListRepository.findById(id)
-                .map(ShoppingListMapper::toDTO);
+        try {
+            return shoppingListRepository.findById(id)
+                    .map(shoppingListMapper::toDTO);
+        } catch (Exception e) {
+            throw new Exception("Failed to get a shopping list");
+        }
     }
 }
 
