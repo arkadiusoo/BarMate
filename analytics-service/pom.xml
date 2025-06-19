@@ -6,7 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.4</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/> <!-- lookup parent from a repository -->
     </parent>
     <groupId>pl.barMate</groupId>
     <artifactId>analytics-service</artifactId>
@@ -46,11 +46,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.2.0</version>
@@ -64,7 +59,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
-<!--        DB dependecies-->
+<!--        DB dependencies-->
             <dependency>
       <groupId>io.github.cdimascio</groupId>
       <artifactId>dotenv-java</artifactId>
@@ -92,7 +87,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- AssertJ dla bardziej czytelnych asercji -->
+        <!-- assertj dla bardziej czytelnych asercji -->
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
@@ -127,6 +122,13 @@
             <version>7.14.0</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -161,7 +163,7 @@
               <artifactId>jacoco-maven-plugin</artifactId>
               <version>0.8.11</version>
               <executions>
-                <!-- Uruchamianie JaCoCo podczas test fazy -->
+                <!-- Uruchamianie jacoco podczas test fazy -->
                 <execution>
                   <goals>
                     <goal>prepare-agent</goal>
