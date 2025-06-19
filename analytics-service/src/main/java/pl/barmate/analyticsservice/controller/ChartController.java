@@ -28,9 +28,21 @@ public class ChartController {
         description = "Returns image with plot based on user's data from user-service."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Returns generated plot successfully."),
-        @ApiResponse(responseCode = "404", description = "User with such id not found."),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(
+            responseCode = "200",
+            description = "Returns generated plot successfully.",
+            content = @io.swagger.v3.oas.annotations.media.Content(mediaType = MediaType.IMAGE_PNG_VALUE)
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "User with such id not found.",
+            content = @io.swagger.v3.oas.annotations.media.Content
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @io.swagger.v3.oas.annotations.media.Content
+        )
     })
 
     @GetMapping(value = "/generate", produces = MediaType.IMAGE_PNG_VALUE)
@@ -54,9 +66,21 @@ public class ChartController {
         description = "Returns image with plot based on previously saved user's data from user-service."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Returns generated plot successfully."),
-        @ApiResponse(responseCode = "404", description = "Record with such id not found."),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(
+            responseCode = "200",
+            description = "Returns generated plot successfully.",
+            content = @io.swagger.v3.oas.annotations.media.Content(mediaType = MediaType.IMAGE_PNG_VALUE)
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Record with such id not found.",
+            content = @io.swagger.v3.oas.annotations.media.Content
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @io.swagger.v3.oas.annotations.media.Content
+        )
     })
 
     @GetMapping(value = "/regenerate/{chartId}", produces = MediaType.IMAGE_PNG_VALUE)
@@ -77,9 +101,21 @@ public class ChartController {
         description = "Returns array with previously saved user's data from user-service."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "List of data retrieved successfully."),
-        @ApiResponse(responseCode = "404", description = "User with such id not found."),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(
+                responseCode = "200",
+                description = "List of data retrieved successfully.",
+                content = @io.swagger.v3.oas.annotations.media.Content(mediaType = MediaType.IMAGE_PNG_VALUE)
+        ),
+        @ApiResponse(
+                responseCode = "404",
+                description = "User with such id not found.",
+                content = @io.swagger.v3.oas.annotations.media.Content
+        ),
+        @ApiResponse(
+                responseCode = "500",
+                description = "Internal server error",
+                content = @io.swagger.v3.oas.annotations.media.Content
+        )
     })
     @GetMapping("/history")
     public ResponseEntity<List<ChartHistoryDTO>> getUserHistory(@RequestParam Long userId) {
