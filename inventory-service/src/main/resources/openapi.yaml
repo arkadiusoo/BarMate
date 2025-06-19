@@ -1,0 +1,225 @@
+openapi: 3.0.3
+info:
+  title: Ingredient Management API
+  version: 1.0.0
+  description: API for managing ingredients in inventory
+tags:
+  - name: Ingredients
+    description: Ingredient management API
+
+paths:
+  /ingredients:
+    post:
+      summary: Create a new ingredient
+      tags: [Ingredients]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ingredient'
+      responses:
+        '200':
+          description: Ingredient created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ingredient'
+
+    get:
+      summary: Get all ingredients
+      tags: [Ingredients]
+      responses:
+        '200':
+          description: List of ingredients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ingredient'
+
+  /ingredients/{id}:
+    get:
+      summary: Get ingredient by ID
+      tags: [Ingredients]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ingredient found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ingredient'
+
+    put:
+      summary: Update an existing ingredient
+      tags: [Ingredients]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ingredient'
+      responses:
+        '200':
+          description: Ingredient updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ingredient'
+
+    delete:
+      summary: Delete ingredient by ID
+      tags: [Ingredients]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Ingredient deleted
+
+  /ingredients/name/{name}:
+    get:
+      summary: Get ingredient by name
+      tags: [Ingredients]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ingredient found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ingredient'
+
+  /ingredients/update-by-name:
+    put:
+      summary: Subtract amount from ingredient by name
+      tags: [Ingredients]
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: amount
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+      responses:
+        '200':
+          description: Ingredient updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ingredient'
+        '400':
+          description: Invalid amount
+        '404':
+          description: Ingredient not found
+
+  /ingredients/update-add-by-name:
+    put:
+      summary: Add amount to ingredient by name
+      tags: [Ingredients]
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: amount
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+      responses:
+        '200':
+          description: Ingredient updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ingredient'
+        '400':
+          description: Invalid amount
+        '404':
+          description: Ingredient not found
+
+  /ingredients/check-shortages:
+    post:
+      summary: Check for ingredient shortages
+      tags: [Ingredients]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Ingredient'
+      responses:
+        '200':
+          description: List of missing ingredients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ingredient'
+
+components:
+  schemas:
+    Ingredient:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Sugar"
+          minLength: 1
+        category:
+          type: string
+          enum:
+            - SOLID
+            - LIQUID
+            - SPICE
+            - OTHER
+          example: "SOLID"
+        amount:
+          type: number
+          format: double
+          minimum: 0
+          example: 2.5
+        unit:
+          type: string
+          example: "kg"
+          minLength: 1
+      required:
+        - name
+        - category
+        - amount
+        - unit
