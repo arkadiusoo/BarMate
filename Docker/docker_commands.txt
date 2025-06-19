@@ -1,0 +1,18 @@
+PostgreSQL Docker Setup Instructions
+1.	Build the database image
+	1.1 Open a terminal and navigate to the docker directory.
+	1.2 Run the following command:
+	    docker build -t barmate-db .
+
+2.	Create and run the container for the first time
+	2.1 Execute this command:
+	    docker run -d --name barmate-postgres -p 5434:5432 barmate-db
+
+3.	Stop the container
+	3.1 To stop the running container, use:
+	    docker stop barmate-postgres
+
+4.	Recommended: automate container startup in IntelliJ
+	4.1 It is recommended to add a Before Launch step in the
+	*Service run configuration to automatically start the
+	Docker container when launching the app.

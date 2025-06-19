@@ -1,5 +1,7 @@
 package pl.barMate.inventory.controller;
 
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.HttpStatus;
 import pl.barMate.inventory.model.Ingredient;
 import pl.barMate.inventory.service.IngredientService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,8 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Ingredients", description = "Ingredient management API")
 public class IngredientController {
-
     private final IngredientService ingredientService;
+
 
     @PostMapping
     @Operation(summary = "Create a new ingredient")
@@ -31,6 +33,13 @@ public class IngredientController {
     @Operation(summary = "Get all ingredients")
     public ResponseEntity<List<Ingredient>> getAllIngredients() {
         return ResponseEntity.ok(ingredientService.getAllIngredients());
+    }
+
+    @GetMapping("/name/{name}")
+    @Operation(summary = "Get ingredient by name")
+    public ResponseEntity<Ingredient> getIngredientByName(
+            @Parameter(description = "Name of the ingredient to retrieve") @PathVariable String name) {
+        return ResponseEntity.ok(ingredientService.getIngredientByName(name));
     }
 
     @GetMapping("/{id}")
@@ -48,6 +57,39 @@ public class IngredientController {
         return ResponseEntity.ok(ingredientService.updateIngredient(id, ingredient));
     }
 
+    @PutMapping("/update-by-name")
+    @Operation(summary = "Subtract amount from ingredient by name")
+    public ResponseEntity<Ingredient> subtractIngredientAmount(
+            @RequestParam("name") @Parameter(description = "Name of the ingredient") String name,
+            @RequestParam("amount") @Parameter(description = "Amount to subtract") double amount) {
+        try {
+            return ingredientService.subtractIngredientAmount(name, amount)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.noContent().build());
+        } catch (EntityNotFoundException ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @PutMapping("/update-add-by-name")
+    @Operation(summary = "Add amount to ingredient by name")
+    public ResponseEntity<Ingredient> addIngredientAmount(
+            @RequestParam("name") @Parameter(description = "Name of the ingredient") String name,
+            @RequestParam("amount") @Parameter(description = "Amount to add") double amount) {
+        try {
+            return ResponseEntity.ok(ingredientService.addIngredientAmount(name, amount));
+        } catch (EntityNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete ingredient by ID")
     public ResponseEntity<Void> deleteIngredient(
@@ -55,4 +97,13 @@ public class IngredientController {
         ingredientService.deleteIngredient(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/check-shortages")
+    @Operation(summary = "Check for ingredient shortages based on required amounts")
+    public ResponseEntity<List<Ingredient>> checkIngredientShortages(
+            @RequestBody List<Ingredient> requestedIngredients) {
+        return ResponseEntity.ok(ingredientService.checkIngredientShortages(requestedIngredients));
+    }
+
+
 }
