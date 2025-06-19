@@ -35,7 +35,7 @@ public class ChartServiceImpl implements ChartService {
         // 2. serialize data to json
         String jsonData = serializeToJson(chartInputData);
 
-        // 3. save chart to db
+        // 3. save chart datq to db
         Chart chart = Chart.builder()
                 .userId(userId)
                 .chartType(chartType)
