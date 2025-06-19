@@ -1,4 +1,0 @@
-package pl.barmate.analyticsservice.integration;
-
-public class AnalyticsServiceApplicationTest {
-}
