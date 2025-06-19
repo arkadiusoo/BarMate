@@ -149,4 +149,23 @@ public class ChartServiceImplTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("User with id 77 not found or has no charts");
     }
+
+    @Test
+    void shouldDeserializeConsumptionInTimeChart() {
+        Long chartId = 456L;
+        Chart chart = Chart.builder()
+                .id(chartId)
+                .userId(1L)
+                .chartType(ChartType.ConsuptionInTime)
+                .chartData("{\"2024-01-01\": \"5\", \"2024-01-02\": \"6\"}")
+                .build();
+
+        when(chartRepository.findById(chartId)).thenReturn(Optional.of(chart));
+        when(pythonChartService.generateChart(eq(chart.getChartType()), any()))
+                .thenReturn(new byte[]{10, 20, 30});
+
+        byte[] result = chartService.regenerateChartFromHistory(chartId);
+
+        assertThat(result).isEqualTo(new byte[]{10, 20, 30});
+    }
 }
