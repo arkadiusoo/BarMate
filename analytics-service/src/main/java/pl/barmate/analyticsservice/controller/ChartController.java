@@ -54,8 +54,13 @@ public class ChartController {
 
     @GetMapping(value = "/regenerate/{chartId}", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> regenerateChart(@PathVariable Long chartId) {
-        byte[] image = chartService.regenerateChartFromHistory(chartId);
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(image);
+        try {
+            byte[] image = chartService.regenerateChartFromHistory(chartId);
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(image);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.notFound().build();
+        }
+
     }
 
     @Operation(
