@@ -10,7 +10,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class RecipeServiceClientImpl implements RecipeServiceClient {
-
+//TODO: dodać try do komunikacji z user-service
     private final RestTemplate restTemplate;
 
     private final String baseUrl = "http://recipe-service/api";

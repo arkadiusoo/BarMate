@@ -86,8 +86,14 @@ private Object deserializeFromJson(String json, ChartType chartType) {
 }
     @Transactional(readOnly = true)
     public List<ChartHistoryDTO> getUserChartHistory(Long userId) {
-    return chartRepository.findAllByUserId(userId).stream()
-            .map(ChartMapper::toHistoryDTO)
-            .toList();
-}
+        List<ChartHistoryDTO> charts = chartRepository.findAllByUserId(userId).stream()
+                .map(ChartMapper::toHistoryDTO)
+                .toList();
+
+        if (charts.isEmpty()) {
+            throw new IllegalArgumentException("User with id " + userId + " not found or has no charts");
+        }
+
+        return charts;
+    }
 }

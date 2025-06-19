@@ -37,9 +37,16 @@ public class ChartController {
     public ResponseEntity<byte[]> generateNewChart(
             @RequestParam ChartType chartType,
             @RequestParam Long userId) {
+        try {
+            byte[] image = chartService.generateChart(chartType, userId);
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(image);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(404).build();
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).build();
+        }
 
-        byte[] image = chartService.generateChart(chartType, userId);
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(image);
+
     }
 
     @Operation(
@@ -58,7 +65,9 @@ public class ChartController {
             byte[] image = chartService.regenerateChartFromHistory(chartId);
             return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(image);
         } catch (IllegalArgumentException ex) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).build();
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).build();
         }
 
     }
@@ -74,6 +83,13 @@ public class ChartController {
     })
     @GetMapping("/history")
     public ResponseEntity<List<ChartHistoryDTO>> getUserHistory(@RequestParam Long userId) {
-    return ResponseEntity.ok(chartService.getUserChartHistory(userId));
+        try {
+            return ResponseEntity.ok(chartService.getUserChartHistory(userId));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(404).build();
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).build();
+        }
+
 }
 }
