@@ -20,6 +20,11 @@ public class UserController {
 
     private final UserService userService;
 
+    @GetMapping("/hello")
+        public ResponseEntity<String> getHello() {
+        return ResponseEntity.ok("hello");
+    }
+
     @GetMapping
     public ResponseEntity<String> getUserProfile(
             @AuthenticationPrincipal OidcUser jwt) {
@@ -63,14 +68,14 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserPreferences(jwt.getSubject()));
     }
 
-    @PostMapping("/me/history")
+    @PostMapping("/history")
     public ResponseEntity<Void> addDrinkHistory(
             @AuthenticationPrincipal Jwt jwt, @RequestBody DrinkHistory drinkHistory) {
         userService.addDrinkHistory(jwt.getSubject(), drinkHistory);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/me/history")
+    @GetMapping("/history")
     public ResponseEntity<List<DrinkHistory>> getDrinkHistory(
             @AuthenticationPrincipal Jwt jwt) {
         return ResponseEntity.ok(userService.getDrinkHistory(jwt.getSubject()));
