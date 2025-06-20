@@ -1,5 +1,6 @@
 package pl.barmate.cocktails.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,20 @@ public class RestClientConfig {
         return builder
                 .baseUrl(baseUrl)
                 .exchangeStrategies(strategies)
+                .defaultHeader("Content-Type", "application/json")
+                .build();
+    }
+
+    @Bean
+    @Qualifier("groqWebClient")
+    public WebClient groqWebClient(
+            WebClient.Builder builder,
+            @Value("${groq.api.base-url}") String baseUrl,
+            @Value("${groq.api.token}") String apiToken
+    ) {
+        return builder
+                .baseUrl(baseUrl)
+                .defaultHeader("Authorization", "Bearer " + apiToken)
                 .defaultHeader("Content-Type", "application/json")
                 .build();
     }

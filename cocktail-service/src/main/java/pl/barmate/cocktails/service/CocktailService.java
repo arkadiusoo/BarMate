@@ -21,10 +21,12 @@ import java.util.Map;
 public class CocktailService {
 
     private final WebClient webClient;
+    private final TranslationService translationService;
 
     @Autowired
-    public CocktailService(WebClient cocktailWebClient) {
+    public CocktailService(WebClient cocktailWebClient, TranslationService translationService) {
         this.webClient = cocktailWebClient;
+        this.translationService = translationService;
     }
 
     // --- Public API methods ---
@@ -114,6 +116,42 @@ public class CocktailService {
 
     // --- Internal helper methods ---
 
+    private Mono<List<String>> translateList(List<String> list) {
+        if (list == null || list.isEmpty()) {
+            return Mono.just(new ArrayList<>());
+        }
+        return translationService.translateBatch(list);
+    }
+
+    private Mono<CocktailDto> translateCocktailDto(CocktailDto dto) {
+        return Mono.just(dto) // Zaczynamy od DTO
+                .flatMap(d -> translationService.translate(d.getCategory())
+                        .map(translated -> {
+                            d.setCategory(translated);
+                            return d;
+                        }))
+                .flatMap(d -> translationService.translate(d.getGlass())
+                        .map(translated -> {
+                            d.setGlass(translated);
+                            return d;
+                        }))
+                .flatMap(d -> translationService.translate(d.getInstructions())
+                        .map(translated -> {
+                            d.setInstructions(translated);
+                            return d;
+                        }))
+                .flatMap(d -> translateList(d.getIngredients())
+                        .map(translated -> {
+                            d.setIngredients(translated);
+                            return d;
+                        }))
+                .flatMap(d -> translateList(d.getMeasures())
+                        .map(translated -> {
+                            d.setMeasures(translated);
+                            return d;
+                        }));
+    }
+
     private Mono<List<CocktailDto>> fetchFull(String path, String param, String value) {
         return webClient.get()
                 .uri(uriBuilder -> {
@@ -131,7 +169,10 @@ public class CocktailService {
                     List<CocktailDto> dtos = resp.getDrinks().stream()
                             .map(this::mapToDto)
                             .toList();
-                    return Mono.just(dtos);
+
+                    return Flux.fromIterable(dtos)
+                            .flatMap(this::translateCocktailDto)
+                            .collectList();
                 });
     }
 
@@ -168,11 +209,11 @@ public class CocktailService {
                 .map(list -> {
                     List<String> result = new ArrayList<>(list.size());
                     for (Map<String, String> m : list) {
-                        // each map has one entry like {"strCategory":"Ordinary Drink"}
                         result.add(m.values().stream().findFirst().orElse(""));
                     }
                     return result;
-                });
+                })
+                .flatMap(this::translateList);
     }
 
     private CocktailDto mapToDto(Cocktail c) {
