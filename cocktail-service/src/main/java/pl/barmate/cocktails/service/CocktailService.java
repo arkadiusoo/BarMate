@@ -1,9 +1,7 @@
 package pl.barmate.cocktails.service;
 
-import pl.barmate.cocktails.model.ApiResponse;
-import pl.barmate.cocktails.model.BriefCocktail;
-import pl.barmate.cocktails.model.Cocktail;
-import pl.barmate.cocktails.model.CocktailDto;
+import org.springframework.beans.factory.annotation.Qualifier;
+import pl.barmate.cocktails.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
@@ -16,19 +14,28 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class CocktailService {
 
-    private final WebClient webClient;
+    private static final Logger log = LoggerFactory.getLogger(CocktailService.class);
+
+    private final WebClient cocktailDbWebClient;
+    private final WebClient inventoryWebClient;
     private final TranslationService translationService;
 
     @Autowired
-    public CocktailService(WebClient cocktailWebClient, TranslationService translationService) {
-        this.webClient = cocktailWebClient;
+    public CocktailService(
+            @Qualifier("cocktailWebClient") WebClient cocktailDbWebClient,
+            @Qualifier("inventoryWebClient") WebClient inventoryWebClient, // <-- DODAJ
+            TranslationService translationService
+    ) {
+        this.cocktailDbWebClient = cocktailDbWebClient;
+        this.inventoryWebClient = inventoryWebClient; // <-- DODAJ
         this.translationService = translationService;
     }
-
     // --- Public API methods ---
 
     /** Search cocktails by full name */
@@ -114,7 +121,54 @@ public class CocktailService {
         return fetchBrief("/filter.php", "i", joined);
     }
 
+    public Mono<List<RequestedIngredientDto>> checkAvailability(String cocktailId) {
+        return lookupById(cocktailId)
+                .flatMap(cocktailDto -> {
+                    List<RequestedIngredientDto> requestedIngredients = parseIngredients(
+                            cocktailDto.getIngredients(),
+                            cocktailDto.getMeasures()
+                    );
+
+                    return inventoryWebClient.post()
+                            .uri("/ingredients/check-shortages")
+                            .bodyValue(requestedIngredients)
+                            .retrieve()
+                            .bodyToMono(new ParameterizedTypeReference<List<RequestedIngredientDto>>() {})
+                            .onErrorResume(e -> {
+                                log.error("Błąd komunikacji z InventoryService: {}", e.getMessage());
+                                return Mono.error(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Inventory service is currently unavailable."));
+                            });
+                });
+    }
+
     // --- Internal helper methods ---
+
+    private List<RequestedIngredientDto> parseIngredients(List<String> ingredients, List<String> measures) {
+        List<RequestedIngredientDto> result = new ArrayList<>();
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d*\\.?\\d+)");
+
+        for (int i = 0; i < ingredients.size(); i++) {
+            String ingredientName = ingredients.get(i);
+            String measureText = (i < measures.size()) ? measures.get(i) : "1";
+
+            java.util.regex.Matcher matcher = pattern.matcher(measureText);
+            double amount = 1.0;
+
+            if (matcher.find()) {
+                try {
+                    amount = Double.parseDouble(matcher.group(1));
+                } catch (NumberFormatException e) {
+                    // Ignorujemy, jeśli nie uda się sparsować, np. dla "Sok z połówki"
+                }
+            }
+
+            // Ignorujemy składniki bez miary, które nie są 'dekoracją', np. sól na brzegu szklanki
+            if (amount > 0 || measureText.toLowerCase().contains("kilka kropli")) {
+                result.add(new RequestedIngredientDto(ingredientName, amount));
+            }
+        }
+        return result;
+    }
 
     private Mono<List<String>> translateList(List<String> list) {
         if (list == null || list.isEmpty()) {
@@ -153,7 +207,7 @@ public class CocktailService {
     }
 
     private Mono<List<CocktailDto>> fetchFull(String path, String param, String value) {
-        return webClient.get()
+        return cocktailDbWebClient.get()
                 .uri(uriBuilder -> {
                     var b = uriBuilder.path(path);
                     if (param != null) b.queryParam(param, value);
@@ -178,7 +232,7 @@ public class CocktailService {
 
     @SuppressWarnings({})
     private Mono<List<BriefCocktail>> fetchBrief(String path, String param, String value) {
-        return webClient.get()
+        return cocktailDbWebClient.get()
                 .uri(uriBuilder -> {
                     var b = uriBuilder.path(path);
                     if (param != null) {
@@ -198,7 +252,7 @@ public class CocktailService {
 
     @SuppressWarnings({})
     private Mono<List<String>> fetchList(String path, String param, String value) {
-        return webClient.get()
+        return cocktailDbWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(path)
                         .queryParam(param, value)
