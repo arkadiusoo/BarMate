@@ -61,9 +61,10 @@ public class IngredientController {
     @Operation(summary = "Subtract amount from ingredient by name")
     public ResponseEntity<Ingredient> subtractIngredientAmount(
             @RequestParam("name") @Parameter(description = "Name of the ingredient") String name,
+            @RequestParam("unit") @Parameter(description = "Name of unit") String unit,
             @RequestParam("amount") @Parameter(description = "Amount to subtract") double amount) {
         try {
-            return ingredientService.subtractIngredientAmount(name, amount)
+            return ingredientService.subtractIngredientAmount(name, unit, amount)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.noContent().build());
         } catch (EntityNotFoundException ex) {
@@ -79,9 +80,10 @@ public class IngredientController {
     @Operation(summary = "Add amount to ingredient by name")
     public ResponseEntity<Ingredient> addIngredientAmount(
             @RequestParam("name") @Parameter(description = "Name of the ingredient") String name,
+            @RequestParam("unit") @Parameter(description = "Name of unit") String unit,
             @RequestParam("amount") @Parameter(description = "Amount to add") double amount) {
         try {
-            return ResponseEntity.ok(ingredientService.addIngredientAmount(name, amount));
+            return ResponseEntity.ok(ingredientService.addIngredientAmount(name, unit, amount));
         } catch (EntityNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (IllegalArgumentException ex) {
