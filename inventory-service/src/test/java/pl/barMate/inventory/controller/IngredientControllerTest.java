@@ -169,11 +169,12 @@ class IngredientControllerTest {
         double updatedAmount = 3.0;
         Ingredient ingredient = new Ingredient(1L, name, IngredientCategory.OTHER, updatedAmount, "kg");
 
-        when(ingredientService.subtractIngredientAmount(name, 2.0)).thenReturn(Optional.of(ingredient));
+        when(ingredientService.subtractIngredientAmount(name, "l", 2.0)).thenReturn(Optional.of(ingredient));
 
         // When + Then
         mockMvc.perform(put("/ingredients/update-by-name")
                         .param("name", name)
+                        .param("unit", "l")
                         .param("amount", "2.0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -186,12 +187,13 @@ class IngredientControllerTest {
         // Given
         String name = "Unknown";
 
-        when(ingredientService.subtractIngredientAmount(name, 1.0))
+        when(ingredientService.subtractIngredientAmount(name, "l", 1.0))
                 .thenThrow(new EntityNotFoundException("Ingredient not found with name: " + name));
 
         // When + Then
         mockMvc.perform(put("/ingredients/update-by-name")
                         .param("name", name)
+                        .param("unit", "l")
                         .param("amount", "1.0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -202,7 +204,7 @@ class IngredientControllerTest {
         // Given
         String name = "Sugar";
 
-        when(ingredientService.subtractIngredientAmount(name, 5.0))
+        when(ingredientService.subtractIngredientAmount(name, "l", 5.0))
                 .thenThrow(new IllegalArgumentException("Insufficient amount of ingredient: " + name));
 
         // When + Then
