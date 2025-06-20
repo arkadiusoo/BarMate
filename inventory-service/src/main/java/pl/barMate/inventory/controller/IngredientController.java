@@ -79,9 +79,10 @@ public class IngredientController {
     @Operation(summary = "Add amount to ingredient by name")
     public ResponseEntity<Ingredient> addIngredientAmount(
             @RequestParam("name") @Parameter(description = "Name of the ingredient") String name,
+            @RequestParam("unit") @Parameter(description = "Name of unit") String unit,
             @RequestParam("amount") @Parameter(description = "Amount to add") double amount) {
         try {
-            return ResponseEntity.ok(ingredientService.addIngredientAmount(name, amount));
+            return ResponseEntity.ok(ingredientService.addIngredientAmount(name, unit, amount));
         } catch (EntityNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (IllegalArgumentException ex) {

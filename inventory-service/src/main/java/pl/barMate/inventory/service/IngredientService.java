@@ -70,22 +70,25 @@ public class IngredientService {
         }
     }
 
-    public Ingredient addIngredientAmount(String name, double amountToAdd) {
+    public Ingredient addIngredientAmount(String name, String unit, double amountToAdd) {
+        Optional<Ingredient> existingOpt = ingredientRepository.findByNameAndUnit(name, unit);
+
         Ingredient ingredient;
-        try {
-            ingredient = ingredientRepository.findByName(name)
-                    .orElseThrow(() -> new EntityNotFoundException("not found"));
+        if (existingOpt.isPresent()) {
+            ingredient = existingOpt.get();
             ingredient.setAmount(ingredient.getAmount() + amountToAdd);
-        } catch (EntityNotFoundException e) {
+        } else {
             ingredient = Ingredient.builder()
                     .name(name)
                     .amount(amountToAdd)
-                    .unit("other") // ustaw domyślną jednostkę, albo dodaj jako argument
-                    .category(IngredientCategory.OTHER) // ustaw domyślną kategorię, albo dodaj jako argument
+                    .unit(unit)
+                    .category(IngredientCategory.OTHER) // możesz to dodać jako parametr, jeśli potrzebujesz
                     .build();
         }
+
         return ingredientRepository.save(ingredient);
     }
+
 
     public List<Ingredient> checkIngredientShortages(List<Ingredient> requestedIngredients) {
         return requestedIngredients.stream()
