@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class ShoppingListControllerTest {
@@ -67,6 +69,19 @@ class ShoppingListControllerTest {
     }
 
     @Test
+    void shouldThrowRuntimeExceptionWhenServiceFails() throws Exception {
+        // Given
+        Long id = 3L;
+        Mockito.when(shoppingListService.getShoppingListById(id))
+                .thenThrow(new IllegalStateException("Shopping list not found"));
+
+        ResponseEntity<ShoppingListDTO> response = shoppingListController.getShoppingList(id);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+    }
+
+    @Test
     void getShoppingListByUser_ShouldReturnLists() {
         Long userId = 5L;
         List<ShoppingListDTO> lists = List.of(
@@ -89,6 +104,16 @@ class ShoppingListControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).hasSize(2);
         assertThat(response.getBody()).isEqualTo(lists);
+    }
+
+    @Test
+    void getShoppingListByUser_ShouldReturnNotFound_WhenUserNotFound() throws Exception {
+        Long userId = 5L;
+        when(shoppingListService.getShoppingListsByUserId(userId)).thenThrow(new Exception("User not found"));
+
+        ResponseEntity<List<ShoppingListDTO>> response = shoppingListController.getShoppingListByUser(userId);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNull();
     }
 
     @Test
@@ -116,6 +141,18 @@ class ShoppingListControllerTest {
     }
 
     @Test
+    void updateShoppingList_ShouldFail_WhenShoppingListNotFound() throws Exception {
+        ShoppingListDTO dto = new ShoppingListDTO(null, 10L, new ArrayList<>(), LocalDate.now());
+        when(shoppingListService.updateShoppingList(dto)).thenThrow(new Exception("Shopping list not found"));
+
+        ResponseEntity<ShoppingListDTO> response = shoppingListController.updateShoppingList(dto, 1L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNull();
+
+    }
+
+    @Test
     void deleteShoppingList_ShouldReturnNoContent() {
         Long id = 10L;
 
@@ -133,6 +170,18 @@ class ShoppingListControllerTest {
         } catch (Exception e) {
             Assertions.fail();
         }
+    }
+
+    @Test
+    void deleteShoppingList_ShouldFail_WhenShoppingListNotFound() throws Exception {
+        Long id = 10L;
+        doThrow(new Exception("Shopping list not found")).when(shoppingListService).deleteShoppingList(id);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                shoppingListController.deleteShoppingList(id));
+
+        assertEquals("java.lang.Exception: Shopping list not found", exception.getMessage());
     }
 
     @Test
@@ -159,7 +208,7 @@ class ShoppingListControllerTest {
     }
 
     @Test
-    void addItemToShoppingList_ShouldReturnCreatedItem() {
+    void addItemToShoppingList_ShouldReturnCreatedItem() throws Exception {
         Long listId = 1L;
         ShoppingItemDTO inputItem = new ShoppingItemDTO();
         ShoppingItemDTO savedItem = new ShoppingItemDTO();
@@ -186,7 +235,7 @@ class ShoppingListControllerTest {
     }
 
     @Test
-    void getItemsFromShoppingList_ShouldReturnItems() {
+    void getItemsFromShoppingList_ShouldReturnItems() throws Exception {
         Long listId = 3L;
         List<ShoppingItemDTO> items = List.of(new ShoppingItemDTO(), new ShoppingItemDTO());
 

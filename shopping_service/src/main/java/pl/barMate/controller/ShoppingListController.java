@@ -14,6 +14,7 @@ import pl.barMate.service.InventoryServiceClient;
 import pl.barMate.service.ShoppingItemMapper;
 import pl.barMate.service.ShoppingItemService;
 import pl.barMate.service.ShoppingListService;
+import reactor.core.Exceptions;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,47 +31,30 @@ public class ShoppingListController {
     private final InventoryServiceClient inventoryServiceClient;
     private final ShoppingItemMapper shoppingItemMapper;
 
-    /*
-    @Operation(summary = "Create a new shopping list")
-    @PostMapping
-    public ResponseEntity<ShoppingListDTO> addShoppingList(@RequestBody ShoppingListDTO shoppingListDTO) {
-        ShoppingListDTO createdList = shoppingListService.addShoppingList(shoppingListDTO);
-        return new ResponseEntity<>(createdList, HttpStatus.CREATED);
-    }*/
-
     @Operation(summary = "Get a shopping list by id")
     @GetMapping("/{id}")
     public ResponseEntity<ShoppingListDTO> getShoppingList(@PathVariable Long id)
     {
-        //Optional<ShoppingListDTO> shoppingListDTO = shoppingListService.getShoppingListById(id);
-        //System.out.println(shoppingListDTO);
 
         try {
             Optional<ShoppingListDTO> list = shoppingListService.getShoppingListById(id);
             return list.map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        //return shoppingListDTO.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @Operation(summary = "Get a shopping list by user id")
     @GetMapping("/user/{id}")
     public ResponseEntity<List<ShoppingListDTO>> getShoppingListByUser(@PathVariable Long id)
     {
-        //Optional<ShoppingListDTO> shoppingListDTO = shoppingListService.getShoppingListById(id);
-        //System.out.println(shoppingListDTO);
-
         try {
             List<ShoppingListDTO> list = shoppingListService.getShoppingListsByUserId(id);
             return new ResponseEntity<>(list, HttpStatus.OK);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
-        //return list.map(ResponseEntity::ok)
-          //      .orElseGet(() -> ResponseEntity.notFound().build());
-        //return shoppingListDTO.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @Operation(summary = "Update a shopping list")
@@ -82,7 +66,7 @@ public class ShoppingListController {
             ShoppingListDTO updatedList = shoppingListService.updateShoppingList(shoppingListDTO);
             return new ResponseEntity<>(updatedList, HttpStatus.OK);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -92,11 +76,21 @@ public class ShoppingListController {
     {
         try {
             shoppingListService.getShoppingListById(list_id).ifPresent(shoppingList -> {
-                shoppingItemService.getShoppingItemById(id).ifPresent(shoppingItem -> {
-                    shoppingItem.setChecked(Boolean.TRUE);
-                    shoppingItemService.updateShoppingItem(shoppingItem);
-                    inventoryServiceClient.updateAmount(shoppingItemService.getShoppingItemById(id).get());
-                });
+                try {
+                    shoppingItemService.getShoppingItemById(id).ifPresent(shoppingItem -> {
+                        if (!shoppingItem.getChecked()) {
+                            shoppingItem.setChecked(Boolean.TRUE);
+                            try {
+                                shoppingItemService.updateShoppingItem(shoppingItem);
+                                inventoryServiceClient.updateAmount(shoppingItemService.getShoppingItemById(id).get());
+                            } catch (Exception e) {
+                                throw Exceptions.propagate(e);
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    throw Exceptions.propagate(e);
+                }
             });
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
@@ -112,7 +106,7 @@ public class ShoppingListController {
                 userId,
                 new ArrayList<>(),
                 LocalDate.now()
-        );        //return new ResponseEntity<>(shoppingList, HttpStatus.CREATED);
+        );
         ShoppingListDTO list = null;
         try {
             list = shoppingListService.addShoppingList(shoppingList);
@@ -120,7 +114,12 @@ public class ShoppingListController {
             throw new RuntimeException(e);
         }
         for (ShoppingItemDTO shoppingItemDTO : shoppingItemsDTO) {
-            ShoppingItemDTO createdItem = shoppingItemService.addShoppingItem(shoppingItemDTO);
+            ShoppingItemDTO createdItem = null;
+            try {
+                createdItem = shoppingItemService.addShoppingItem(shoppingItemDTO);
+            } catch (Exception e) {
+                throw Exceptions.propagate(e);
+            }
             createdItem.setShoppingListId(list.getId());
         }
         return new ResponseEntity<>(HttpStatus.CREATED);
@@ -146,7 +145,7 @@ public class ShoppingListController {
                 userId,
                 new ArrayList<>(),
                 LocalDate.now()
-        );        //return new ResponseEntity<>(shoppingList, HttpStatus.CREATED);
+        );
         ShoppingListDTO list = null;
         try {
             list = shoppingListService.addShoppingList(shoppingList);
@@ -159,8 +158,12 @@ public class ShoppingListController {
     @Operation(summary = "Add an item to a shopping list")
     @PostMapping("/{id}/items")
     public ResponseEntity<ShoppingItemDTO> addItemToShoppingList(@PathVariable Long id, @RequestBody ShoppingItemDTO shoppingItemDTO) {
-        // shoppingItem.setId(id);
-        ShoppingItemDTO createdItem = shoppingItemService.addShoppingItem(shoppingItemDTO);
+        ShoppingItemDTO createdItem;
+        try {
+            createdItem = shoppingItemService.addShoppingItem(shoppingItemDTO);
+        } catch (Exception e) {
+            throw Exceptions.propagate(e);
+        }
 
         return new ResponseEntity<>(createdItem, HttpStatus.CREATED);
     }
@@ -175,7 +178,12 @@ public class ShoppingListController {
     @Operation(summary = "Get items from a specific shopping list")
     @GetMapping("/{listId}/items")
     public ResponseEntity<List<ShoppingItemDTO>> getItemsFromShoppingList(@PathVariable Long listId) {
-        List<ShoppingItemDTO> items = shoppingItemService.getItemsByShoppingListId(listId);
+        List<ShoppingItemDTO> items;
+        try {
+            items = shoppingItemService.getItemsByShoppingListId(listId);
+        } catch (Exception e) {
+            throw Exceptions.propagate(e);
+        }
         return new ResponseEntity<>(items, HttpStatus.OK);
     }
 }

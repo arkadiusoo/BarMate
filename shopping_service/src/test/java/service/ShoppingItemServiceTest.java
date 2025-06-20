@@ -1,5 +1,6 @@
 package service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -40,7 +41,7 @@ class ShoppingItemServiceTest {
     }
 
     @Test
-    void shouldAddShoppingItem() {
+    void shouldAddShoppingItem() throws Exception {
         // given
         ShoppingItemDTO dto = new ShoppingItemDTO(1L, "Milk", 2.0, "liters", false, 1L);
         ShoppingItem entity = new ShoppingItem(1L, "Milk", 2.0, "liters", false, null);
@@ -61,32 +62,38 @@ class ShoppingItemServiceTest {
     }
 
     @Test
-    void shouldReturnNullWhenToEntityFails() {
+    void shouldThrowWhenToEntityFails() throws Exception {
         ShoppingItemDTO dto = new ShoppingItemDTO(); // przykładowy DTO
 
         // Zwracanie wyjątku
         when(shoppingItemMapper.toEntity(dto)).thenThrow(new RuntimeException("Mapping failed"));
 
-        ShoppingItemDTO result = shoppingItemService.addShoppingItem(dto);
+        try {
+            shoppingItemService.addShoppingItem(dto);
+        } catch (Exception e) {
+            assertThat(e).hasMessage("Failed to add a shopping item");
+        }
 
-        assertThat(result).isNull();
     }
 
     @Test
-    void shouldReturnNullWhenSaveFails() {
+    void shouldThrowWhenSaveFails() throws Exception {
         ShoppingItemDTO dto = new ShoppingItemDTO();
         ShoppingItem entity = new ShoppingItem();
 
         when(shoppingItemMapper.toEntity(dto)).thenReturn(entity);
         when(shoppingItemRepository.save(entity)).thenThrow(new RuntimeException("DB error"));
 
-        ShoppingItemDTO result = shoppingItemService.addShoppingItem(dto);
-
-        assertThat(result).isNull();
+        ShoppingItemDTO result = null;
+        try {
+            shoppingItemService.addShoppingItem(dto);
+        } catch (Exception e) {
+            assertThat(e.getMessage()).isEqualTo("Failed to add a shopping item");
+        }
     }
 
     @Test
-    void shouldUpdateShoppingItem() {
+    void shouldUpdateShoppingItem() throws Exception {
         // given
         ShoppingItemDTO dto = new ShoppingItemDTO(1L, "Milk", 2.0, "liters", false, 1L);
         ShoppingItem entity = new ShoppingItem(1L, "Milk", 2.0, "liters", false, null);
@@ -114,7 +121,7 @@ class ShoppingItemServiceTest {
     }
 
     @Test
-    void shouldGetShoppingItemById() {
+    void shouldGetShoppingItemById() throws Exception {
         Long id = 3L;
         ShoppingItem entity = new ShoppingItem(3L, "Bread", 1.0, "pcs", false, null);
         ShoppingItemDTO dto = new ShoppingItemDTO(3L, "Bread", 1.0, "pcs", false, 1L);
@@ -129,7 +136,7 @@ class ShoppingItemServiceTest {
     }
 
     @Test
-    void shouldGetItemsByShoppingListId() {
+    void shouldGetItemsByShoppingListId() throws Exception {
         Long listId = 10L;
         ShoppingItem entity = new ShoppingItem(1L, "Eggs", 12.0, "pcs", false, null);
         ShoppingItemDTO dto = new ShoppingItemDTO(1L, "Eggs", 12.0, "pcs", false, listId);
@@ -145,7 +152,7 @@ class ShoppingItemServiceTest {
     }
 
     @Test
-    void shouldGetItemsByIngredientName() {
+    void shouldGetItemsByIngredientName() throws Exception {
         String name = "Butter";
         ShoppingItem entity = new ShoppingItem(2L, "Butter", 1.0, "pack", true, null);
         ShoppingItemDTO dto = new ShoppingItemDTO(2L, "Butter", 1.0, "pack", true, 2L);

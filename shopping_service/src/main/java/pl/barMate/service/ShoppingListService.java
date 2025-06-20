@@ -61,7 +61,6 @@ public class ShoppingListService {
     }
 
     public Optional<ShoppingListDTO> getShoppingListById(Long id) throws Exception {
-        //System.out.println(shoppingListRepository.findAll().stream().map(ShoppingListMapper::toDTO).collect(Collectors.toList()));
         try {
             return shoppingListRepository.findById(id)
                     .map(shoppingListMapper::toDTO);

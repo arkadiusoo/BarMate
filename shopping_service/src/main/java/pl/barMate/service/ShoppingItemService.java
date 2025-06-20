@@ -23,7 +23,7 @@ public class ShoppingItemService {
     //private final ShoppingItemMapper shoppingItemMapper;
 
 
-    public ShoppingItemDTO addShoppingItem(ShoppingItemDTO shoppingItemDTO) {
+    public ShoppingItemDTO addShoppingItem(ShoppingItemDTO shoppingItemDTO) throws Exception {
 
         try
         {
@@ -31,48 +31,53 @@ public class ShoppingItemService {
             ShoppingItem savedItem = shoppingItemRepository.save(shoppingItem);
             return shoppingItemMapper.toDTO(savedItem);
 
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return null;
+        } catch (Exception e) {
+            throw new Exception("Failed to add a shopping item");
         }
     }
 
-    public ShoppingItemDTO updateShoppingItem(ShoppingItemDTO shoppingItemDTO) {
-        ShoppingItem shoppingItem = shoppingItemMapper.toEntity(shoppingItemDTO);
-        ShoppingItem updatedItem = shoppingItemRepository.save(shoppingItem);
-        return shoppingItemMapper.toDTO(updatedItem);
+    public ShoppingItemDTO updateShoppingItem(ShoppingItemDTO shoppingItemDTO) throws Exception {
+        try {
+            ShoppingItem shoppingItem = shoppingItemMapper.toEntity(shoppingItemDTO);
+            ShoppingItem updatedItem = shoppingItemRepository.save(shoppingItem);
+            return shoppingItemMapper.toDTO(updatedItem);
+        } catch (Exception e) {
+            throw new Exception("Failed to update the shopping list");
+        }
     }
 
     public void deleteShoppingItem(Long id) {
         shoppingItemRepository.deleteById(id);
     }
 
-    public List<ShoppingItemDTO> getItemsByShoppingListId(Long shoppingListId) {
-        return shoppingItemRepository.findByShoppingListId(shoppingListId)
-                .stream()
-                .map(shoppingItemMapper::toDTO)
-                .collect(Collectors.toList());
+    public List<ShoppingItemDTO> getItemsByShoppingListId(Long shoppingListId) throws Exception {
+        try {
+            return shoppingItemRepository.findByShoppingListId(shoppingListId)
+                    .stream()
+                    .map(shoppingItemMapper::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new Exception("Shopping list not found");
+        }
     }
-    /*
-    public List<ShoppingItemDTO> getItemsByUserId(Long userId) {
-        return shoppingItemRepository.findByUserId(userId)
-                .stream()
-                .map(ShoppingItemMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    */
-    public Optional<ShoppingItemDTO> getShoppingItemById(Long id) {
-        return shoppingItemRepository.findById(id)
-                .map(shoppingItemMapper::toDTO);
+    public Optional<ShoppingItemDTO> getShoppingItemById(Long id) throws Exception {
+        try {
+            return shoppingItemRepository.findById(id)
+                    .map(shoppingItemMapper::toDTO);
+        } catch (Exception e) {
+            throw new Exception("Shopping item not found");
+        }
     }
 
-    public List<ShoppingItemDTO> getItemsByIngredientName(String ingredientName) {
-        return shoppingItemRepository.findByIngredientName(ingredientName)
-                .stream()
-                .map(shoppingItemMapper::toDTO)
-                .collect(Collectors.toList());
+    public List<ShoppingItemDTO> getItemsByIngredientName(String ingredientName) throws Exception{
+        try {
+            return shoppingItemRepository.findByIngredientName(ingredientName)
+                    .stream()
+                    .map(shoppingItemMapper::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new Exception("Ingredient name does not exist");
+        }
     }
 }
 

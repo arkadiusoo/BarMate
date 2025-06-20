@@ -26,6 +26,7 @@
 		<module>shopping_service</module>
 		<module>analytics-service</module>
         <module>user-service</module>
+		<module>AppRunner</module>
     </modules>
 	<scm>
 		<connection/>

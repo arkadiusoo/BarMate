@@ -16,6 +16,7 @@ public class InventoryServiceClient {
 
     public void updateAmount(ShoppingItemDTO item) {
         String name = item.getIngredientName();
+        String unit = item.getUnit();
         double amount = item.getAmount();
         /*
         String url_check = "http://localhost:8082/ingredients/name/{name}";
@@ -29,8 +30,8 @@ public class InventoryServiceClient {
             }
         }
         */
-        String url = "http://inventory-service/ingredients/update-add-by-name?name={name}&amount={amount}";
+        String url = "http://inventory-service/ingredients/update-add-by-name?name={name}&unit={unit}&amount={amount}";
 
-        restTemplate.put(url, null, name, amount);
+        restTemplate.put(url, null, name, unit, amount);
     }
 }
