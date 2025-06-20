@@ -29,14 +29,14 @@ public class RestClientConfig {
     }
 
     @Bean
-    @Qualifier("huggingFaceWebClient") // Identyfikator dla tego konkretnego beana
-    public WebClient huggingFaceWebClient(
+    @Qualifier("groqWebClient")
+    public WebClient groqWebClient(
             WebClient.Builder builder,
-            @Value("${huggingface.api.base-url}") String hfBaseUrl,
-            @Value("${huggingface.api.token}") String apiToken
+            @Value("${groq.api.base-url}") String baseUrl,
+            @Value("${groq.api.token}") String apiToken
     ) {
         return builder
-                .baseUrl(hfBaseUrl)
+                .baseUrl(baseUrl)
                 .defaultHeader("Authorization", "Bearer " + apiToken)
                 .defaultHeader("Content-Type", "application/json")
                 .build();
