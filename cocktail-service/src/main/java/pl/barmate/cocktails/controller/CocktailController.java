@@ -2,6 +2,7 @@ package pl.barmate.cocktails.controller;
 
 import pl.barmate.cocktails.model.BriefCocktail;
 import pl.barmate.cocktails.model.CocktailDto;
+import pl.barmate.cocktails.model.RequestedIngredientDto;
 import pl.barmate.cocktails.service.CocktailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -128,6 +129,14 @@ public class CocktailController {
             @Parameter(description = "Comma-separated list of ingredients", example = "Dry_Vermouth,Gin,Anis")
             @RequestParam("ingredients") List<String> ingredients) {
         return cocktailService.filterByMultipleIngredients(ingredients);
+    }
+
+    @Operation(summary = "Check availability of ingredients for a specific cocktail")
+    @GetMapping("/check-availability/{cocktailId}")
+    public Mono<List<RequestedIngredientDto>> checkAvailability(
+            @Parameter(description = "ID of the cocktail to check", required = true)
+            @PathVariable String cocktailId) {
+        return cocktailService.checkAvailability(cocktailId);
     }
 }
 
