@@ -2,6 +2,7 @@ package pl.barmate.cocktails.controller;
 
 import pl.barmate.cocktails.model.BriefCocktail;
 import pl.barmate.cocktails.model.CocktailDto;
+import pl.barmate.cocktails.model.IngredientConsumptionDto;
 import pl.barmate.cocktails.model.RequestedIngredientDto;
 import pl.barmate.cocktails.service.CocktailService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -131,12 +132,28 @@ public class CocktailController {
         return cocktailService.filterByMultipleIngredients(ingredients);
     }
 
-    @Operation(summary = "Check availability of ingredients for a specific cocktail")
+    @Operation(summary = "Check availability of ingredients for a specific cocktail by ID")
     @GetMapping("/check-availability/{cocktailId}")
-    public Mono<List<RequestedIngredientDto>> checkAvailability(
+    public Mono<List<IngredientConsumptionDto>> checkAvailability(
             @Parameter(description = "ID of the cocktail to check", required = true)
             @PathVariable String cocktailId) {
         return cocktailService.checkAvailability(cocktailId);
+    }
+
+    @Operation(summary = "Check availability of ingredients for a cocktail by its name")
+    @GetMapping("/check-availability/by-name")
+    public Mono<List<IngredientConsumptionDto>> checkAvailabilityByName(
+            @Parameter(description = "Name of the cocktail to check", required = true, example = "Margarita")
+            @RequestParam String name) {
+        return cocktailService.checkAvailabilityByName(name);
+    }
+
+    @Operation(summary = "Make a cocktail and subtract ingredients from inventory")
+    @PostMapping("/make-drink/by-name")
+    public Mono<String> makeCocktail(
+            @Parameter(description = "Name of the cocktail to make", required = true)
+            @RequestParam String name) {
+        return cocktailService.makeCocktailByName(name);
     }
 }
 

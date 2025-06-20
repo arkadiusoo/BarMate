@@ -14,6 +14,9 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,19 +124,22 @@ public class CocktailService {
         return fetchBrief("/filter.php", "i", joined);
     }
 
-    public Mono<List<RequestedIngredientDto>> checkAvailability(String cocktailId) {
-        return lookupById(cocktailId)
+    private Mono<List<IngredientConsumptionDto>> performAvailabilityCheck(Mono<CocktailDto> cocktailDtoMono) {
+        return cocktailDtoMono
                 .flatMap(cocktailDto -> {
-                    List<RequestedIngredientDto> requestedIngredients = parseIngredients(
+                    // Używamy naszego ulepszonego parsera, który zwraca listę z jednostkami
+                    List<IngredientConsumptionDto> requestedIngredients = parseIngredients(
                             cocktailDto.getIngredients(),
                             cocktailDto.getMeasures()
                     );
 
+                    // Wysyłamy do InventoryService listę składników z jednostkami
                     return inventoryWebClient.post()
                             .uri("/ingredients/check-shortages")
                             .bodyValue(requestedIngredients)
                             .retrieve()
-                            .bodyToMono(new ParameterizedTypeReference<List<RequestedIngredientDto>>() {})
+                            // ZMIANA: Oczekujemy odpowiedzi w formacie naszego nowego, pełnego DTO
+                            .bodyToMono(new ParameterizedTypeReference<List<IngredientConsumptionDto>>() {})
                             .onErrorResume(e -> {
                                 log.error("Błąd komunikacji z InventoryService: {}", e.getMessage());
                                 return Mono.error(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Inventory service is currently unavailable."));
@@ -141,30 +147,88 @@ public class CocktailService {
                 });
     }
 
+    public Mono<List<IngredientConsumptionDto>> checkAvailability(String cocktailId) {
+        return performAvailabilityCheck(lookupById(cocktailId));
+    }
+
+    public Mono<List<IngredientConsumptionDto>> checkAvailabilityByName(String cocktailName) {
+        Mono<CocktailDto> firstCocktailMono = searchByName(cocktailName)
+                .flatMap(cocktailList -> {
+                    if (cocktailList.isEmpty()) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Cocktail not found with name: " + cocktailName));
+                    }
+                    return Mono.just(cocktailList.get(0));
+                });
+        return performAvailabilityCheck(firstCocktailMono);
+    }
+
+    public Mono<String> makeCocktailByName(String cocktailName) {
+        Mono<CocktailDto> cocktailDtoMono = searchByName(cocktailName)
+                .flatMap(cocktailList -> {
+                    if (cocktailList.isEmpty()) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Cocktail not found: " + cocktailName));
+                    }
+                    return Mono.just(cocktailList.get(0));
+                });
+
+        return cocktailDtoMono.flatMap(cocktailDto -> {
+            List<IngredientConsumptionDto> ingredientsToSubtract = parseIngredients(
+                    cocktailDto.getIngredients(),
+                    cocktailDto.getMeasures()
+            );
+
+            return Flux.fromIterable(ingredientsToSubtract)
+                    .concatMap(ingredient ->
+                            inventoryWebClient.post()
+                                    .uri("/ingredients/subtract-by-name/" + ingredient.getName() + "?amount=" + ingredient.getAmount())
+                                    .retrieve()
+                                    .bodyToMono(Void.class) // Oczekujemy pustej odpowiedzi (status 200 OK)
+                                    .onErrorResume(e -> {
+                                        log.error("Błąd podczas odejmowania składnika '{}': {}", ingredient.getName(), e.getMessage());
+                                        // Przekształcamy błąd z InventoryService na błąd zrozumiały dla klienta
+                                        return Mono.error(new ResponseStatusException(HttpStatus.CONFLICT, "Failed to subtract ingredient: " + ingredient.getName() + ". Reason: " + e.getMessage()));
+                                    })
+                    )
+                    .then(Mono.just("Successfully made cocktail: " + cocktailName)); // Po zakończeniu wszystkich operacji, zwróć sukces
+        });
+    }
+
+
     // --- Internal helper methods ---
 
-    private List<RequestedIngredientDto> parseIngredients(List<String> ingredients, List<String> measures) {
-        List<RequestedIngredientDto> result = new ArrayList<>();
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d*\\.?\\d+)");
+    private List<IngredientConsumptionDto> parseIngredients(List<String> ingredients, List<String> measures) {
+        List<IngredientConsumptionDto> result = new ArrayList<>();
+        Pattern pattern = Pattern.compile("(\\d*\\.?\\d+)\\s*(\\w+)?");
 
         for (int i = 0; i < ingredients.size(); i++) {
             String ingredientName = ingredients.get(i);
-            String measureText = (i < measures.size()) ? measures.get(i) : "1";
+            String measureText = (i < measures.size()) ? measures.get(i) : "";
 
-            java.util.regex.Matcher matcher = pattern.matcher(measureText);
-            double amount = 1.0;
+            Matcher matcher = pattern.matcher(measureText);
+            double amount = 0;
+            String unit = "szt.";
 
             if (matcher.find()) {
                 try {
                     amount = Double.parseDouble(matcher.group(1));
-                } catch (NumberFormatException e) {
-                    // Ignorujemy, jeśli nie uda się sparsować, np. dla "Sok z połówki"
+                    if (matcher.group(2) != null) {
+                        unit = matcher.group(2);
+                    }
+                } catch (NumberFormatException e) { /* ignoruj błąd parsowania */ }
+            } else {
+                if (measureText.toLowerCase().contains("sok z połówki")) {
+                    amount = 0.5;
+                    unit = "szt.";
+                } else if (measureText.toLowerCase().contains("kilka kropli")) {
+                    amount = 2;
+                    unit = "krople";
+                } else if (!measureText.isBlank()) {
+                    amount = 1;
                 }
             }
 
-            // Ignorujemy składniki bez miary, które nie są 'dekoracją', np. sól na brzegu szklanki
-            if (amount > 0 || measureText.toLowerCase().contains("kilka kropli")) {
-                result.add(new RequestedIngredientDto(ingredientName, amount));
+            if (amount > 0) {
+                result.add(new IngredientConsumptionDto(ingredientName, amount, unit));
             }
         }
         return result;
