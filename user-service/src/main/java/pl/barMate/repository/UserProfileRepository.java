@@ -6,5 +6,5 @@ import pl.barMate.model.UserProfile;
 import java.util.Optional;
 
 public interface UserProfileRepository extends JpaRepository<UserProfile, Long> {
-    Optional<UserProfile> findByKeycloakId(String keycloakId);
+    Optional<UserProfile> findUserProfileByUsername(String username);
 }
