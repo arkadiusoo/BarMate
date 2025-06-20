@@ -21,10 +21,12 @@ import java.util.Map;
 public class CocktailService {
 
     private final WebClient webClient;
+    private final TranslationService translationService;
 
     @Autowired
-    public CocktailService(WebClient cocktailWebClient) {
+    public CocktailService(WebClient cocktailWebClient, TranslationService translationService) {
         this.webClient = cocktailWebClient;
+        this.translationService = translationService;
     }
 
     // --- Public API methods ---
@@ -114,6 +116,31 @@ public class CocktailService {
 
     // --- Internal helper methods ---
 
+    private Mono<List<String>> translateList(List<String> list) {
+        return Flux.fromIterable(list)
+                .flatMap(translationService::translate)
+                .collectList();
+    }
+
+    /** Tłumaczy pola tekstowe w obiekcie CocktailDto. */
+    private Mono<CocktailDto> translateCocktailDto(CocktailDto dto) {
+        // Tłumaczymy równolegle kilka pól przy użyciu Mono.zip
+        return Mono.zip(
+                translationService.translate(dto.getCategory()),
+                translationService.translate(dto.getGlass()),
+                translationService.translate(dto.getInstructions()),
+                translateList(dto.getIngredients()),
+                translateList(dto.getMeasures())
+        ).map(tuple -> {
+            dto.setCategory(tuple.getT1());
+            dto.setGlass(tuple.getT2());
+            dto.setInstructions(tuple.getT3());
+            dto.setIngredients(tuple.getT4());
+            dto.setMeasures(tuple.getT5());
+            return dto;
+        });
+    }
+
     private Mono<List<CocktailDto>> fetchFull(String path, String param, String value) {
         return webClient.get()
                 .uri(uriBuilder -> {
@@ -131,7 +158,11 @@ public class CocktailService {
                     List<CocktailDto> dtos = resp.getDrinks().stream()
                             .map(this::mapToDto)
                             .toList();
-                    return Mono.just(dtos);
+
+                    // Zwracamy strumień przetłumaczonych DTO
+                    return Flux.fromIterable(dtos)
+                            .flatMap(this::translateCocktailDto) // Użyj flatMap dla operacji asynchronicznej
+                            .collectList();
                 });
     }
 
@@ -168,11 +199,12 @@ public class CocktailService {
                 .map(list -> {
                     List<String> result = new ArrayList<>(list.size());
                     for (Map<String, String> m : list) {
-                        // each map has one entry like {"strCategory":"Ordinary Drink"}
                         result.add(m.values().stream().findFirst().orElse(""));
                     }
                     return result;
-                });
+                })
+                // Dodajemy krok tłumaczenia całej listy
+                .flatMap(this::translateList);
     }
 
     private CocktailDto mapToDto(Cocktail c) {
