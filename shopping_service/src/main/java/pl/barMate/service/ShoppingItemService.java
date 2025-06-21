@@ -20,6 +20,7 @@ public class ShoppingItemService {
 
     private final ShoppingItemRepository shoppingItemRepository;
     private final ShoppingItemMapper shoppingItemMapper;
+    private final ShoppingListService shoppingListService;
     //private final ShoppingItemMapper shoppingItemMapper;
 
 
@@ -28,8 +29,8 @@ public class ShoppingItemService {
         try
         {
             ShoppingItem shoppingItem = shoppingItemMapper.toEntity(shoppingItemDTO);
-            shoppingItemRepository.save(shoppingItem);
-            return shoppingItemMapper.toDTO(shoppingItem);
+            ShoppingItem savedItem = shoppingItemRepository.save(shoppingItem);
+            return shoppingItemMapper.toDTO(savedItem);
 
         } catch (Exception e) {
             throw new Exception("Failed to add a shopping item");

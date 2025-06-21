@@ -43,23 +43,25 @@ class ShoppingItemServiceTest {
     @Test
     void shouldAddShoppingItem() throws Exception {
         // given
-        ShoppingItemDTO dto = new ShoppingItemDTO(1L, "Milk", 2.0, "liters", false, 1L);
-        ShoppingItem entity = new ShoppingItem(1L, "Milk", 2.0, "liters", false, null);
+        ShoppingItemDTO inputDto = new ShoppingItemDTO(1L, "Milk", 2.0, "liters", false, 1L);
+        ShoppingItem entityToSave = new ShoppingItem(1L, "Milk", 2.0, "liters", false, null);
         ShoppingItem savedEntity = new ShoppingItem(1L, "Milk", 2.0, "liters", false, null);
+        ShoppingItemDTO expectedDto = new ShoppingItemDTO(1L, "Milk", 2.0, "liters", false, 1L);
 
-        when(shoppingItemMapper.toEntity(dto)).thenReturn(entity);
-        when(shoppingItemRepository.save(entity)).thenReturn(savedEntity);
-        when(shoppingItemMapper.toDTO(savedEntity)).thenReturn(dto);
+        when(shoppingItemMapper.toEntity(inputDto)).thenReturn(entityToSave);
+        when(shoppingItemRepository.save(entityToSave)).thenReturn(savedEntity);
+        when(shoppingItemMapper.toDTO(savedEntity)).thenReturn(expectedDto);
 
         // when
-        ShoppingItemDTO result = shoppingItemService.addShoppingItem(dto);
+        ShoppingItemDTO result = shoppingItemService.addShoppingItem(inputDto);
 
         // then
-        assertThat(result).isEqualTo(dto);
-        verify(shoppingItemMapper).toEntity(dto);
-        verify(shoppingItemRepository).save(entity);
+        assertThat(result).isEqualTo(expectedDto);
+        verify(shoppingItemMapper).toEntity(inputDto);
+        verify(shoppingItemRepository).save(entityToSave);
         verify(shoppingItemMapper).toDTO(savedEntity);
     }
+
 
     @Test
     void shouldThrowWhenToEntityFails() throws Exception {

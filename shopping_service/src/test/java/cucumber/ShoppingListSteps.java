@@ -48,11 +48,9 @@ public class ShoppingListSteps {
     Long shoppingItemId;
     Long shoppingListId;
 
-    @Given("a shopping list with ID {long} and an unchecked item with ID {long}")
-    public void createUncheckedItem(Long listId, Long itemId) {
-        ShoppingList shoppingList = new ShoppingList(listId, 1L, new ArrayList<>());
-        //shoppingList.setSomeField(1L); // inne pola
-        //shoppingList = shoppingListRepository.save(shoppingList); // zapisz listę, by mieć ID wygenerowane przez DB
+    @Given("user creates a shopping list with an unchecked item")
+    public void createUncheckedItem() {
+        //ShoppingList shoppingList = new ShoppingList(listId, 1L, new ArrayList<>());
         ResponseEntity<ShoppingListDTO> list = shoppingListController.createShoppingList(1L);
         shoppingListId = list.getBody().getId();
         ShoppingItemDTO item = new ShoppingItemDTO();
@@ -60,16 +58,13 @@ public class ShoppingListSteps {
         item.setAmount(100.0);
         item.setUnit("l");
         item.setChecked(false);
-        //item.setShoppingList(list);
-
-        //savedItem = shoppingItemRepository.save(item);
         ResponseEntity<ShoppingItemDTO> shoppingItem = shoppingListController.addItemToShoppingList(shoppingListId, item);
         shoppingItemId = shoppingItem.getBody().getId();
         System.out.println("Saved item ID: " + shoppingItem.getBody().getId());
     }
 
-    @When("the user checks off item with ID {long} on list ID {long}")
-    public void checkOffItem(Long itemId, Long listId) {
+    @When("the user checks off the item on the list")
+    public void checkOffItem() {
         response = shoppingListController.checkOffShoppingItem(shoppingListId, shoppingItemId);
     }
 
@@ -78,15 +73,9 @@ public class ShoppingListSteps {
         assertThat(response.getStatusCodeValue()).isEqualTo(200);
     }
 
-    @And("the item with ID {long} should be marked as checked")
-    public void assertItemChecked(Long itemId) {
+    @And("the item should be marked as checked")
+    public void assertItemChecked() {
         ShoppingItem item = shoppingItemRepository.findById(shoppingItemId).orElseThrow();
         assertThat(item.getChecked()).isTrue();
-    }
-
-    @And("the inventory should be updated for item ID {long}")
-    public void assertInventoryUpdated(Long itemId) {
-        // Tu można sprawdzić pośrednio – np. jeśli InventoryServiceClient zapisuje do bazy lub zmienia stan
-        // Albo: dodać testowy `TestInventoryServiceClient` jako bean i obserwować czy została wywołana metoda
     }
 }

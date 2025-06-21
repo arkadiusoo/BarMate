@@ -86,6 +86,7 @@ public class ShoppingListController {
                                 throw Exceptions.propagate(e);
                             }
                         }
+                        item[0] = shoppingItem;
                     });
                 } catch (Exception e) {
                     throw Exceptions.propagate(e);
@@ -140,7 +141,7 @@ public class ShoppingListController {
     public ResponseEntity<ShoppingListDTO> createShoppingList(@RequestBody Long userId) {
         Long id = shoppingListService.getMaxShoppingListId().longValue();
         ShoppingListDTO shoppingList = new ShoppingListDTO(
-                id,
+                null,
                 userId,
                 new ArrayList<>(),
                 LocalDate.now()
@@ -163,6 +164,11 @@ public class ShoppingListController {
         shoppingItemDTO.setShoppingListId(id);
         try {
             createdItem = shoppingItemService.addShoppingItem(shoppingItemDTO);
+            ShoppingListDTO shoppingListDTO = shoppingListService.getShoppingListById(id).get();
+            List<ShoppingItemDTO> itemList = shoppingListDTO.getItems();
+            itemList.add(shoppingItemDTO);
+            shoppingListDTO.setItems(itemList);
+            ShoppingListDTO updatedList = shoppingListService.updateShoppingList(shoppingListDTO);
         } catch (Exception e) {
             throw Exceptions.propagate(e);
         }

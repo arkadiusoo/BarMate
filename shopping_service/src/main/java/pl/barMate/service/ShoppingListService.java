@@ -50,6 +50,7 @@ public class ShoppingListService {
 
     public List<ShoppingListDTO> getShoppingListsByUserId(Long userId) throws Exception {
         try {
+            List<ShoppingList> list = shoppingListRepository.findByUserId(userId);
             return shoppingListRepository.findByUserId(userId)
                     .stream()
                     .map(shoppingListMapper::toDTO)

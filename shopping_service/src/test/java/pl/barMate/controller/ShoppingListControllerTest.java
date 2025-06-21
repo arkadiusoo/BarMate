@@ -228,17 +228,41 @@ class ShoppingListControllerTest {
 
     @Test
     void addItemToShoppingList_ShouldReturnCreatedItem() throws Exception {
+        // Given
         Long listId = 1L;
+        Long itemId = 100L;
+
         ShoppingItemDTO inputItem = new ShoppingItemDTO();
+        inputItem.setIngredientName("Gin");
+        inputItem.setAmount(1.0);
+        inputItem.setUnit("l");
+
         ShoppingItemDTO savedItem = new ShoppingItemDTO();
+        savedItem.setId(itemId);
+        savedItem.setIngredientName("Gin");
+        savedItem.setAmount(1.0);
+        savedItem.setUnit("l");
+        savedItem.setShoppingListId(listId);
 
-        when(shoppingItemService.addShoppingItem(inputItem)).thenReturn(savedItem);
+        ShoppingListDTO listDTO = new ShoppingListDTO();
+        listDTO.setId(listId);
+        listDTO.setUserId(1L);
+        listDTO.setItems(new ArrayList<>());
 
+        // When – konfiguracja mocków
+        when(shoppingItemService.getMaxShoppingItemtId()).thenReturn(itemId.intValue() - 1); // czyli 99
+        when(shoppingItemService.addShoppingItem(any(ShoppingItemDTO.class))).thenReturn(savedItem);
+        when(shoppingListService.getShoppingListById(listId)).thenReturn(Optional.of(listDTO));
+        when(shoppingListService.updateShoppingList(any(ShoppingListDTO.class))).thenReturn(listDTO);
+
+        // Act
         ResponseEntity<ShoppingItemDTO> response = shoppingListController.addItemToShoppingList(listId, inputItem);
 
+        // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isEqualTo(savedItem);
     }
+
 
     @Test
     void addItemToShoppingList_ShouldFail() throws Exception {
