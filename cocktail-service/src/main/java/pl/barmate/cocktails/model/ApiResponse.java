@@ -22,9 +22,4 @@ public class ApiResponse<T> {
     public List<T> getDrinks() {
         return drinks;
     }
-
-    public void setDrinks(List<T> drinks) {
-        this.drinks = drinks;
-    }
-
 }

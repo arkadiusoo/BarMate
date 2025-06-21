@@ -24,6 +24,9 @@ public class ChartServiceImpl implements ChartService {
 
     @Override
     public byte[] generateChart(ChartType chartType, Long userId) {
+        if (chartType == null) {
+            throw new IllegalArgumentException("Chart type must be provided");
+        }
         // 1. get data from recipe-service
         Object chartInputData = switch (chartType) {
             case TheMostPopularRecipies -> recipeServiceClient.getMostPopularRecipies(userId);
@@ -35,7 +38,7 @@ public class ChartServiceImpl implements ChartService {
         // 2. serialize data to json
         String jsonData = serializeToJson(chartInputData);
 
-        // 3. save chart to db
+        // 3. save chart datq to db
         Chart chart = Chart.builder()
                 .userId(userId)
                 .chartType(chartType)
@@ -86,8 +89,14 @@ private Object deserializeFromJson(String json, ChartType chartType) {
 }
     @Transactional(readOnly = true)
     public List<ChartHistoryDTO> getUserChartHistory(Long userId) {
-    return chartRepository.findAllByUserId(userId).stream()
-            .map(ChartMapper::toHistoryDTO)
-            .toList();
-}
+        List<ChartHistoryDTO> charts = chartRepository.findAllByUserId(userId).stream()
+                .map(ChartMapper::toHistoryDTO)
+                .toList();
+
+        if (charts.isEmpty()) {
+            throw new IllegalArgumentException("User with id " + userId + " not found or has no charts");
+        }
+
+        return charts;
+    }
 }

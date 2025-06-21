@@ -51,14 +51,16 @@ public class IngredientService {
                 .orElseThrow(() -> new EntityNotFoundException("Ingredient not found with name: " + name));
     }
 
-    public Optional<Ingredient> subtractIngredientAmount(String name, double amountToSubtract) {
-        Ingredient existingIngredient = ingredientRepository.findByName(name)
-                .orElseThrow(() -> new EntityNotFoundException("Ingredient not found with name: " + name));
+    public Optional<Ingredient> subtractIngredientAmount(String name, String unit, double amountToSubtract) {
+        Ingredient existingIngredient = ingredientRepository.findByNameAndUnit(name, unit)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Ingredient not found with name: " + name + " and unit: " + unit
+                ));
 
         double currentAmount = existingIngredient.getAmount();
 
         if (currentAmount < amountToSubtract) {
-            throw new IllegalArgumentException("Insufficient amount of ingredient: " + name);
+            throw new IllegalArgumentException("Insufficient amount of ingredient: " + name + " (" + unit + ")");
         }
 
         if (currentAmount == amountToSubtract) {
@@ -70,29 +72,47 @@ public class IngredientService {
         }
     }
 
-    public Ingredient addIngredientAmount(String name, double amountToAdd) {
+    public Ingredient addIngredientAmount(String name, String unit, double amountToAdd) {
+        Optional<Ingredient> existingOpt = ingredientRepository.findByNameAndUnit(name, unit);
+
         Ingredient ingredient;
-        try {
-            ingredient = ingredientRepository.findByName(name)
-                    .orElseThrow(() -> new EntityNotFoundException("not found"));
+        if (existingOpt.isPresent()) {
+            ingredient = existingOpt.get();
             ingredient.setAmount(ingredient.getAmount() + amountToAdd);
-        } catch (EntityNotFoundException e) {
+        } else {
             ingredient = Ingredient.builder()
                     .name(name)
                     .amount(amountToAdd)
-                    .unit("other") // ustaw domyślną jednostkę, albo dodaj jako argument
-                    .category(IngredientCategory.OTHER) // ustaw domyślną kategorię, albo dodaj jako argument
+                    .unit(unit)
+                    .category(IngredientCategory.OTHER) // możesz to dodać jako parametr, jeśli potrzebujesz
                     .build();
         }
+
         return ingredientRepository.save(ingredient);
     }
+
 
     public List<Ingredient> checkIngredientShortages(List<Ingredient> requestedIngredients) {
         return requestedIngredients.stream()
                 .map(requested -> {
-                    Ingredient stored = ingredientRepository.findByName(requested.getName())
-                            .orElseThrow(() -> new EntityNotFoundException("Ingredient not found: " + requested.getName()));
+                    Optional<Ingredient> storedOpt = ingredientRepository.findByNameAndUnit(
+                            requested.getName(),
+                            requested.getUnit()
+                    );
+
+                    if (storedOpt.isEmpty()) {
+                        // Składnik nie istnieje w bazie → cały wymagany jest brakiem
+                        return Ingredient.builder()
+                                .name(requested.getName())
+                                .amount(requested.getAmount())
+                                .unit(requested.getUnit())
+                                .category(IngredientCategory.OTHER) // lub null, jeśli kategoria nieznana
+                                .build();
+                    }
+
+                    Ingredient stored = storedOpt.get();
                     double shortage = requested.getAmount() - stored.getAmount();
+
                     if (shortage > 0) {
                         return Ingredient.builder()
                                 .name(stored.getName())
@@ -101,12 +121,13 @@ public class IngredientService {
                                 .category(stored.getCategory())
                                 .build();
                     } else {
-                        return null;
+                        return null; // brak niedoboru
                     }
                 })
                 .filter(Objects::nonNull)
                 .toList();
     }
+
 
 
 }
