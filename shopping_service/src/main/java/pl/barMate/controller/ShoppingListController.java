@@ -7,9 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.barMate.dto.ShoppingItemDTO;
 import pl.barMate.dto.ShoppingListDTO;
-import pl.barMate.dto.ShoppingItemDTO;
-import pl.barMate.model.ShoppingItem;
-import pl.barMate.model.ShoppingList;
 import pl.barMate.service.InventoryServiceClient;
 import pl.barMate.service.ShoppingItemMapper;
 import pl.barMate.service.ShoppingItemService;
@@ -17,12 +14,12 @@ import pl.barMate.service.ShoppingListService;
 import reactor.core.Exceptions;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
-@RestController
+@RestController("ShoppingListController")
 @RequestMapping("/shopping-list")
 @RequiredArgsConstructor
 public class ShoppingListController {
@@ -72,8 +69,9 @@ public class ShoppingListController {
 
     @Operation(summary = "Check off a shopping item")
     @PutMapping("/{list_id}/item/{id}")
-    public ResponseEntity<ShoppingItem> checkOffShoppingItem(@PathVariable Long list_id, @PathVariable Long id)
+    public ResponseEntity<ShoppingItemDTO> checkOffShoppingItem(@PathVariable Long list_id, @PathVariable Long id)
     {
+        final ShoppingItemDTO[] item = {null};
         try {
             shoppingListService.getShoppingListById(list_id).ifPresent(shoppingList -> {
                 try {
@@ -83,6 +81,7 @@ public class ShoppingListController {
                             try {
                                 shoppingItemService.updateShoppingItem(shoppingItem);
                                 inventoryServiceClient.updateAmount(shoppingItemService.getShoppingItemById(id).get());
+                                item[0] = shoppingItem;
                             } catch (Exception e) {
                                 throw Exceptions.propagate(e);
                             }
@@ -92,7 +91,7 @@ public class ShoppingListController {
                     throw Exceptions.propagate(e);
                 }
             });
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(item[0], HttpStatus.OK);
         } catch (Exception e) {
             throw Exceptions.propagate(e);
         }
@@ -139,9 +138,9 @@ public class ShoppingListController {
     @Operation(summary = "Create a shopping list")
     @PostMapping()
     public ResponseEntity<ShoppingListDTO> createShoppingList(@RequestBody Long userId) {
-
+        Long id = shoppingListService.getMaxShoppingListId().longValue();
         ShoppingListDTO shoppingList = new ShoppingListDTO(
-                null,
+                id,
                 userId,
                 new ArrayList<>(),
                 LocalDate.now()
@@ -159,6 +158,9 @@ public class ShoppingListController {
     @PostMapping("/{id}/items")
     public ResponseEntity<ShoppingItemDTO> addItemToShoppingList(@PathVariable Long id, @RequestBody ShoppingItemDTO shoppingItemDTO) {
         ShoppingItemDTO createdItem;
+        Integer idItem = shoppingItemService.getMaxShoppingItemtId() + 1;
+        //shoppingItemDTO.setId(idItem.longValue());
+        shoppingItemDTO.setShoppingListId(id);
         try {
             createdItem = shoppingItemService.addShoppingItem(shoppingItemDTO);
         } catch (Exception e) {

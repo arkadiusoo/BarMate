@@ -30,7 +30,7 @@ public class InventoryServiceClient {
             }
         }
         */
-        String url = "http://inventory-service/ingredients/update-add-by-name?name={name}&unit={unit}&amount={amount}";
+        String url = "http://localhost:8082/ingredients/update-add-by-name?name={name}&unit={unit}&amount={amount}";
 
         restTemplate.put(url, null, name, unit, amount);
     }

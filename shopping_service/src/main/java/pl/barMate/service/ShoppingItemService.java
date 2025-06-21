@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
+@Service("ShoppingItemService")
 @RequiredArgsConstructor
 public class ShoppingItemService {
 
@@ -28,8 +28,8 @@ public class ShoppingItemService {
         try
         {
             ShoppingItem shoppingItem = shoppingItemMapper.toEntity(shoppingItemDTO);
-            ShoppingItem savedItem = shoppingItemRepository.save(shoppingItem);
-            return shoppingItemMapper.toDTO(savedItem);
+            shoppingItemRepository.save(shoppingItem);
+            return shoppingItemMapper.toDTO(shoppingItem);
 
         } catch (Exception e) {
             throw new Exception("Failed to add a shopping item");
@@ -82,6 +82,14 @@ public class ShoppingItemService {
         } catch (Exception e) {
             throw new Exception("Ingredient name does not exist");
         }
+    }
+
+    public Integer getMaxShoppingItemtId() {
+        Integer id = shoppingItemRepository.getMaxId();
+        if (id == null) {
+            return 0;
+        }
+        return id;
     }
 }
 

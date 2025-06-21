@@ -2,6 +2,7 @@ package pl.barMate.service;
 
 import jakarta.persistence.Column;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import pl.barMate.dto.ShoppingItemDTO;
 import pl.barMate.dto.ShoppingListDTO;
@@ -13,10 +14,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class ShoppingListMapper {
 
-    ShoppingItemMapper shoppingItemMapper;
+    private final ShoppingItemMapper shoppingItemMapper;
 
     public ShoppingListDTO toDTO(ShoppingList shoppingList) {
         if (shoppingList == null) {

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
+@Service("ShoppingListService")
 @RequiredArgsConstructor
 public class ShoppingListService {
 
@@ -67,6 +67,14 @@ public class ShoppingListService {
         } catch (Exception e) {
             throw new Exception("Failed to get a shopping list");
         }
+    }
+
+    public Integer getMaxShoppingListId() {
+        Integer id = shoppingListRepository.getMaxId();
+        if (id == null) {
+            return 0;
+        }
+        return id;
     }
 }
 

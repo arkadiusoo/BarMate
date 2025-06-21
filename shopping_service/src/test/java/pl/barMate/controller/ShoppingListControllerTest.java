@@ -368,15 +368,43 @@ class ShoppingListControllerTest {
     void checkOffShoppingItem_ShouldReturnOK() {
         Long shoppingItemId = 1L;
         Long shoppingListId = 1L;
-        try {
-            when(shoppingItemService.updateShoppingItem(any(ShoppingItemDTO.class))).thenReturn(any(ShoppingItemDTO.class));
-        } catch (Exception e) {
-            Assertions.fail();
-        }
-        ResponseEntity<ShoppingItem> response = shoppingListController.checkOffShoppingItem(shoppingListId, shoppingItemId);
 
+        // Given: shopping item is initially not checked
+        ShoppingItemDTO uncheckedItem = new ShoppingItemDTO();
+        uncheckedItem.setId(shoppingItemId);
+        uncheckedItem.setChecked(false);
+
+        // After update, the item is marked as checked
+        ShoppingItemDTO checkedItem = new ShoppingItemDTO();
+        checkedItem.setId(shoppingItemId);
+        checkedItem.setChecked(true);
+
+        try {
+            when(shoppingListService.getShoppingListById(shoppingListId)).thenReturn(Optional.of(new ShoppingListDTO()));
+            // Mock: get by ID returns unchecked item
+            when(shoppingItemService.getShoppingItemById(shoppingItemId)).thenReturn(Optional.of(uncheckedItem));
+
+            // Mock: update returns checked item
+            when(shoppingItemService.updateShoppingItem(any(ShoppingItemDTO.class))).thenReturn(checkedItem);
+
+            // Mock: inventory service (you can verify later if it was called)
+            doNothing().when(inventoryServiceClient).updateAmount(any(ShoppingItemDTO.class));
+        } catch (Exception e) {
+            Assertions.fail("Mocking failed: " + e.getMessage());
+        }
+
+        // When
+        ResponseEntity<ShoppingItemDTO> response = shoppingListController.checkOffShoppingItem(shoppingListId, shoppingItemId);
+
+        // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getChecked()).isTrue();
+
+        // Optional: verify calls
+        verify(inventoryServiceClient, times(1)).updateAmount(any(ShoppingItemDTO.class));
     }
+
 
     @Test
     void checkOffShoppingItem_ShouldFail() throws Exception {
@@ -443,7 +471,7 @@ class ShoppingListControllerTest {
         when(shoppingListService.getShoppingListById(shoppingListId)).thenReturn(Optional.of(shoppingList));
         when(shoppingItemService.getShoppingItemById(shoppingItemId)).thenReturn(Optional.of(checkedItem));
 
-        ResponseEntity<ShoppingItem> response = shoppingListController.checkOffShoppingItem(shoppingListId, shoppingItemId);
+        ResponseEntity<ShoppingItemDTO> response = shoppingListController.checkOffShoppingItem(shoppingListId, shoppingItemId);
 
         // Nie powinno dojść do żadnych aktualizacji
         verify(shoppingItemService, never()).updateShoppingItem(any());
