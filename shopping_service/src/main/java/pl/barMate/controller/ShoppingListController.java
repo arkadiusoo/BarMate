@@ -94,13 +94,13 @@ public class ShoppingListController {
             });
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Exceptions.propagate(e);
         }
     }
 
     @Operation(summary = "Create a list with shoppingItems")
     @PostMapping("/with-items")
-    public ResponseEntity<ShoppingList> createShoppingListWithItems(@RequestBody Long userId, @RequestBody List<ShoppingItemDTO> shoppingItemsDTO) {
+    public ResponseEntity<ShoppingListDTO> createShoppingListWithItems(@RequestBody Long userId, @RequestBody List<ShoppingItemDTO> shoppingItemsDTO) {
         ShoppingListDTO shoppingList = new ShoppingListDTO(
                 null,
                 userId,
@@ -111,7 +111,7 @@ public class ShoppingListController {
         try {
             list = shoppingListService.addShoppingList(shoppingList);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Exceptions.propagate(e);
         }
         for (ShoppingItemDTO shoppingItemDTO : shoppingItemsDTO) {
             ShoppingItemDTO createdItem = null;
@@ -122,7 +122,7 @@ public class ShoppingListController {
             }
             createdItem.setShoppingListId(list.getId());
         }
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(list, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Delete a shopping list")
@@ -171,8 +171,12 @@ public class ShoppingListController {
     @Operation(summary = "Delete an item from a shopping list")
     @DeleteMapping("/{id}/items/{itemId}")
     public ResponseEntity<Void> removeItemFromShoppingList(@PathVariable Long id, @PathVariable Long itemId) {
-        shoppingItemService.deleteShoppingItem(itemId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        try {
+            shoppingItemService.deleteShoppingItem(itemId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            throw Exceptions.propagate(e);
+        }
     }
 
     @Operation(summary = "Get items from a specific shopping list")

@@ -112,7 +112,7 @@ class ShoppingItemServiceTest {
     }
 
     @Test
-    void shouldDeleteShoppingItem() {
+    void shouldDeleteShoppingItem() throws Exception {
         Long id = 5L;
 
         shoppingItemService.deleteShoppingItem(id);

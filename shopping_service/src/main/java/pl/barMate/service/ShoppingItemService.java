@@ -46,8 +46,12 @@ public class ShoppingItemService {
         }
     }
 
-    public void deleteShoppingItem(Long id) {
-        shoppingItemRepository.deleteById(id);
+    public void deleteShoppingItem(Long id) throws Exception {
+        try {
+            shoppingItemRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new Exception("Failed to remove a shopping item");
+        }
     }
 
     public List<ShoppingItemDTO> getItemsByShoppingListId(Long shoppingListId) throws Exception {
