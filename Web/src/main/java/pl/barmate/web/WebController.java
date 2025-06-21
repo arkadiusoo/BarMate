@@ -15,6 +15,9 @@ public class WebController {
     @LoadBalanced
     private RestTemplate restTemplate;
 
+    @Autowired
+    DiscoveryClient discoveryClient;
+
     @GetMapping("/info")
     public String getHello() {
         ResponseEntity<String> forEntity = restTemplate.getForEntity("http://user-service/me/hello", String.class);
