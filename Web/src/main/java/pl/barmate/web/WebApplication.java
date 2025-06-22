@@ -23,6 +23,18 @@ public class WebApplication {
                 .route("UserRoute", r -> r.path("/user-service/**")
                         .filters(f -> f.stripPrefix(1))
                         .uri("lb://user-service"))
+                .route("ShoppingService", r-> r.path("/shopping_service/**")
+                .filters(f -> f.stripPrefix(1))
+                .uri("lb://shopping_service"))
+                .route("inventory_service", r-> r.path("/inventory_service/**")
+                        .filters(f -> f.stripPrefix(1))
+                        .uri("lb://inventory_service"))
+                .route("drink-service", r-> r.path("/drink-service/**")
+                        .filters(f -> f.stripPrefix(1))
+                        .uri("lb://drink-service"))
+                .route("analytics-service", r-> r.path("/analytics-service/**")
+                        .filters(f -> f.stripPrefix(1))
+                        .uri("lb://analytics-service"))
                 .build();
     }
     @Bean
