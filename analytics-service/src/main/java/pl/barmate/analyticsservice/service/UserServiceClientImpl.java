@@ -4,12 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-import java.util.Map;
-
 @Service
 @RequiredArgsConstructor
-public class RecipeServiceClientImpl implements RecipeServiceClient {
+public class UserServiceClientImpl implements UserServiceClient {
     private final RestTemplate restTemplate;
 
     private final String baseUrl = "http://localhost:8080/user-service/me";
