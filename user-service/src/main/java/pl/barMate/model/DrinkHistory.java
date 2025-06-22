@@ -1,9 +1,7 @@
 package pl.barMate.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 public class DrinkHistory {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private Long recipeId;
@@ -23,5 +21,6 @@ public class DrinkHistory {
     private String comment;
 
     @ManyToOne
+    @JsonBackReference
     private UserProfile user;
 }
