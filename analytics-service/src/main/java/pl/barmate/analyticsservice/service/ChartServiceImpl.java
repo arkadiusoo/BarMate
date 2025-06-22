@@ -29,9 +29,9 @@ public class ChartServiceImpl implements ChartService {
         }
         // 1. get data from recipe-service
         Object chartInputData = switch (chartType) {
-            case TheMostPopularRecipies -> recipeServiceClient.getMostPopularRecipies(userId);
-            case TheMostPopularIngredients -> recipeServiceClient.getMostPopularIngredients(userId);
-            case ConsuptionInTime -> recipeServiceClient.getConsuptionInTime(userId);
+            case TheMostPopularRecipies -> recipeServiceClient.getMostPopularRecipies();
+            case TheMostPopularIngredients -> recipeServiceClient.getMostPopularIngredients();
+            case ConsuptionInTime -> recipeServiceClient.getConsuptionInTime();
             default -> throw new IllegalArgumentException("Unsupported chart type: " + chartType);
         };
 

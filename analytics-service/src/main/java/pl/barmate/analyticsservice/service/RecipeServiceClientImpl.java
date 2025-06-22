@@ -10,30 +10,29 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class RecipeServiceClientImpl implements RecipeServiceClient {
-//TODO: dodać try do komunikacji z user-service oraz napisać testy jednostkowe
     private final RestTemplate restTemplate;
 
-    private final String baseUrl = "http://recipe-service/api";
+    private final String baseUrl = "http://localhost:8080/user-service/me";
 
     @Override
-    public Object getMostPopularRecipies(Long userId) {
-//        return restTemplate.getForObject(baseUrl + "/recipes/popularDrinks?userId=" + userId, Object.class);
-        return List.of("Mojito", "Margarita", "Mojito", "Martini", "Margarita");
+    public Object getMostPopularRecipies() {
+        return restTemplate.getForObject(baseUrl + "/getDrinkNames", Object.class);
+//        return List.of("Mojito", "Margarita", "Mojito", "Martini", "Margarita");
     }
 
     @Override
-    public Object getMostPopularIngredients(Long userId) {
-//        return restTemplate.getForObject(baseUrl + "/recipes/popularIngredients?userId=" + userId, Object.class);
-        return List.of("Lime", "Mint", "Lime", "Rum", "Mint");
+    public Object getMostPopularIngredients() {
+        return restTemplate.getForObject(baseUrl + "/getIngredients", Object.class);
+//        return List.of("Lime", "Mint", "Lime", "Rum", "Mint");
     }
 
     @Override
-    public Object getConsuptionInTime(Long userId) {
-//        return restTemplate.getForObject(baseUrl + "/recipes/consumption?userId=" + userId, Object.class);
-        return Map.of(
-                "Mojito", "2024-06-01",
-                "Margarita", "2024-06-02",
-                "Martini", "2024-06-03"
-        );
+    public Object getConsuptionInTime() {
+        return restTemplate.getForObject(baseUrl + "/getDateList", Object.class);
+//        return Map.of(
+//                "Mojito", "2024-06-01",
+//                "Margarita", "2024-06-02",
+//                "Martini", "2024-06-03"
+//        );
     }
 }
