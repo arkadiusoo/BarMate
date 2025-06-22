@@ -1,5 +1,7 @@
 package pl.barMate.service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.barMate.dto.ShoppingItemDTO;
 import pl.barMate.dto.ShoppingListDTO;
@@ -15,13 +17,12 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.stream;
 
 @Component
+@RequiredArgsConstructor
 public class ShoppingItemMapper {
 
-    private static ShoppingListRepository shoppingListRepository;
-    public ShoppingItemMapper(ShoppingListRepository shoppingListRepository) {
-        this.shoppingListRepository = shoppingListRepository;
-    }
-    public static ShoppingItemDTO toDTO(ShoppingItem item) {
+    private final ShoppingListRepository shoppingListRepository;
+
+    public ShoppingItemDTO toDTO(ShoppingItem item) {
         if (item == null) {
             return null;
         }
@@ -38,11 +39,11 @@ public class ShoppingItemMapper {
         );
     }
 
-    public static ShoppingItem toEntity(ShoppingItemDTO dto) {
+    public ShoppingItem toEntity(ShoppingItemDTO dto) {
         if (dto == null) {
             return null;
         }
-        System.out.println("dto" + dto);
+        //System.out.println("dto" + dto);
 
         ShoppingList shoppingList = shoppingListRepository
                 .findById(dto.getShoppingListId())

@@ -14,74 +14,83 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
+@Service("ShoppingItemService")
 @RequiredArgsConstructor
 public class ShoppingItemService {
 
     private final ShoppingItemRepository shoppingItemRepository;
+    private final ShoppingItemMapper shoppingItemMapper;
     private final ShoppingListService shoppingListService;
-    private final RestTemplate restTemplate;
+    //private final ShoppingItemMapper shoppingItemMapper;
 
 
-    public ShoppingItemDTO addShoppingItem(ShoppingItemDTO shoppingItemDTO) {
+    public ShoppingItemDTO addShoppingItem(ShoppingItemDTO shoppingItemDTO) throws Exception {
 
         try
         {
-            ShoppingItem shoppingItem = ShoppingItemMapper.toEntity(shoppingItemDTO);
-            System.out.println(shoppingItem);
+            ShoppingItem shoppingItem = shoppingItemMapper.toEntity(shoppingItemDTO);
             ShoppingItem savedItem = shoppingItemRepository.save(shoppingItem);
-            return ShoppingItemMapper.toDTO(savedItem);
+            return shoppingItemMapper.toDTO(savedItem);
 
+        } catch (Exception e) {
+            throw new Exception("Failed to add a shopping item");
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return null;
+    }
+
+    public ShoppingItemDTO updateShoppingItem(ShoppingItemDTO shoppingItemDTO) throws Exception {
+        try {
+            ShoppingItem shoppingItem = shoppingItemMapper.toEntity(shoppingItemDTO);
+            ShoppingItem updatedItem = shoppingItemRepository.save(shoppingItem);
+            return shoppingItemMapper.toDTO(updatedItem);
+        } catch (Exception e) {
+            throw new Exception("Failed to update the shopping list");
         }
-        /*
-        Long shoppingListId = shoppingItemDTO.getShoppingListId();
-        Optional<ShoppingListDTO> list = shoppingListService.getShoppingListById(shoppingListId);
-        List<ShoppingItemDTO> itemList = getItemsByShoppingListId(shoppingListId);
-        itemList.add(shoppingItemDTO);
-        ShoppingListDTO newShoppingList = shoppingListService.updateShoppingList()
-
-        shoppingListService.updateShoppingList()*/
     }
 
-    public ShoppingItemDTO updateShoppingItem(ShoppingItemDTO shoppingItemDTO) {
-        ShoppingItem shoppingItem = ShoppingItemMapper.toEntity(shoppingItemDTO);
-        ShoppingItem updatedItem = shoppingItemRepository.save(shoppingItem);
-        return ShoppingItemMapper.toDTO(updatedItem);
+    public void deleteShoppingItem(Long id) throws Exception {
+        try {
+            shoppingItemRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new Exception("Failed to remove a shopping item");
+        }
     }
 
-    public void deleteShoppingItem(Long id) {
-        shoppingItemRepository.deleteById(id);
+    public List<ShoppingItemDTO> getItemsByShoppingListId(Long shoppingListId) throws Exception {
+        try {
+            return shoppingItemRepository.findByShoppingListId(shoppingListId)
+                    .stream()
+                    .map(shoppingItemMapper::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new Exception("Shopping list not found");
+        }
+    }
+    public Optional<ShoppingItemDTO> getShoppingItemById(Long id) throws Exception {
+        try {
+            return shoppingItemRepository.findById(id)
+                    .map(shoppingItemMapper::toDTO);
+        } catch (Exception e) {
+            throw new Exception("Shopping item not found");
+        }
     }
 
-    public List<ShoppingItemDTO> getItemsByShoppingListId(Long shoppingListId) {
-        return shoppingItemRepository.findByShoppingListId(shoppingListId)
-                .stream()
-                .map(ShoppingItemMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    /*
-    public List<ShoppingItemDTO> getItemsByUserId(Long userId) {
-        return shoppingItemRepository.findByUserId(userId)
-                .stream()
-                .map(ShoppingItemMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    */
-    public Optional<ShoppingItemDTO> getShoppingItemById(Long id) {
-        return shoppingItemRepository.findById(id)
-                .map(ShoppingItemMapper::toDTO);
+    public List<ShoppingItemDTO> getItemsByIngredientName(String ingredientName) throws Exception{
+        try {
+            return shoppingItemRepository.findByIngredientName(ingredientName)
+                    .stream()
+                    .map(shoppingItemMapper::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new Exception("Ingredient name does not exist");
+        }
     }
 
-    public List<ShoppingItemDTO> getItemsByIngredientName(String ingredientName) {
-        return shoppingItemRepository.findByIngredientName(ingredientName)
-                .stream()
-                .map(ShoppingItemMapper::toDTO)
-                .collect(Collectors.toList());
+    public Integer getMaxShoppingItemtId() {
+        Integer id = shoppingItemRepository.getMaxId();
+        if (id == null) {
+            return 0;
+        }
+        return id;
     }
 }
 
