@@ -28,6 +28,7 @@
         <module>user-service</module>
 		<module>AppRunner</module>
 		<module>cocktail-service</module>
+		<module>Web</module>
     </modules>
 	<scm>
 		<connection/>
