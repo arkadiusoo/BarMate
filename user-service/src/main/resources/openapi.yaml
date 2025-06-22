@@ -1,0 +1,221 @@
+openapi: 3.0.3
+info:
+  title: BarMate User API
+  version: 1.0.0
+  description: API do zarządzania kontem użytkownika, preferencjami i historią drinków
+
+servers:
+  - url: http://localhost:8084
+
+paths:
+  /me:
+    get:
+      summary: Pobierz profil użytkownika
+      responses:
+        '200':
+          description: Profil użytkownika
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+      security:
+        - bearerAuth: []
+
+  /me/favorites/recipe/{recipeId}:
+    post:
+      summary: Dodaj przepis do ulubionych
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dodano do ulubionych
+      security:
+        - bearerAuth: []
+    delete:
+      summary: Usuń przepis z ulubionych
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usunięto z ulubionych
+      security:
+        - bearerAuth: []
+
+  /me/favorites/ingredient/{ingredientId}:
+    post:
+      summary: Dodaj składnik do ulubionych
+      parameters:
+        - name: ingredientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dodano do ulubionych
+      security:
+        - bearerAuth: []
+    delete:
+      summary: Usuń składnik z ulubionych
+      parameters:
+        - name: ingredientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Usunięto z ulubionych
+      security:
+        - bearerAuth: []
+
+  /me/preferences:
+    get:
+      summary: Pobierz preferencje użytkownika
+      responses:
+        '200':
+          description: Preferencje użytkownika
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+      security:
+        - bearerAuth: []
+
+  /me/history:
+    post:
+      summary: Dodaj wpis do historii drinków
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DrinkHistory'
+      responses:
+        '200':
+          description: Historia dodana
+      security:
+        - bearerAuth: []
+    get:
+      summary: Pobierz historię drinków
+      responses:
+        '200':
+          description: Lista historii drinków
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DrinkHistory'
+      security:
+        - bearerAuth: []
+
+  /me/getDrinkNames:
+    get:
+      summary: Pobierz nazwy drinków z historii
+      responses:
+        '200':
+          description: Lista nazw
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+      security:
+        - bearerAuth: []
+
+  /me/getIngredients:
+    get:
+      summary: Pobierz składniki z historii
+      responses:
+        '200':
+          description: Lista składników
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+      security:
+        - bearerAuth: []
+
+  /me/getDateList:
+    get:
+      summary: Pobierz mapę dat i drinków
+      responses:
+        '200':
+          description: Mapa dat i nazw drinków
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+      security:
+        - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        userPreferences:
+          $ref: '#/components/schemas/UserPreferences'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/DrinkHistory'
+
+    UserPreferences:
+      type: object
+      properties:
+        favoriteIngredients:
+          type: array
+          items:
+            type: string
+        favoriteRecipes:
+          type: array
+          items:
+            type: integer
+        nonAlcoholic:
+          type: boolean
+
+    DrinkHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+        recipeId:
+          type: integer
+        date:
+          type: string
+          format: date-time
+        rating:
+          type: integer
+        comment:
+          type: string
