@@ -13,6 +13,7 @@ import pl.barMate.model.ShoppingList;
 import pl.barMate.service.InventoryServiceClient;
 import pl.barMate.service.ShoppingItemService;
 import pl.barMate.service.ShoppingListService;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -412,7 +413,7 @@ class ShoppingListControllerTest {
             when(shoppingItemService.updateShoppingItem(any(ShoppingItemDTO.class))).thenReturn(checkedItem);
 
             // Mock: inventory service (you can verify later if it was called)
-            doNothing().when(inventoryServiceClient).updateAmount(any(ShoppingItemDTO.class));
+            when(inventoryServiceClient.updateAmount(any(ShoppingItemDTO.class))).thenReturn(Mono.empty());
         } catch (Exception e) {
             Assertions.fail("Mocking failed: " + e.getMessage());
         }
