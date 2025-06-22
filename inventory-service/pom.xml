@@ -82,6 +82,8 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-actuator-autoconfigure</artifactId>
+            <version>3.4.5</version>
+
         </dependency>
 
     </dependencies>

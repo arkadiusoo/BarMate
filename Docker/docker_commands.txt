@@ -6,7 +6,7 @@ PostgreSQL Docker Setup Instructions
 
 2.	Create and run the container for the first time
 	2.1 Execute this command:
-	    docker run -d --name barmate-postgres -p 5434:5432 barmate-db
+	    docker run -d --name barmate-postgres -p 5439:5432 barmate-db
 
 3.	Stop the container
 	3.1 To stop the running container, use:

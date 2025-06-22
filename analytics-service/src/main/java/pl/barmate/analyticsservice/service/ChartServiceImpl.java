@@ -18,7 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ChartServiceImpl implements ChartService {
 
-    private final RecipeServiceClient recipeServiceClient;
+    private final UserServiceClient userServiceClient;
     private final PythonChartService pythonChartService;
     private final ChartRepository chartRepository;
 
@@ -29,9 +29,9 @@ public class ChartServiceImpl implements ChartService {
         }
         // 1. get data from recipe-service
         Object chartInputData = switch (chartType) {
-            case TheMostPopularRecipies -> recipeServiceClient.getMostPopularRecipies(userId);
-            case TheMostPopularIngredients -> recipeServiceClient.getMostPopularIngredients(userId);
-            case ConsuptionInTime -> recipeServiceClient.getConsuptionInTime(userId);
+            case TheMostPopularRecipies -> userServiceClient.getMostPopularRecipies();
+            case TheMostPopularIngredients -> userServiceClient.getMostPopularIngredients();
+            case ConsuptionInTime -> userServiceClient.getConsuptionInTime();
             default -> throw new IllegalArgumentException("Unsupported chart type: " + chartType);
         };
 

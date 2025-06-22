@@ -10,9 +10,8 @@ import pl.barmate.analyticsservice.model.ChartType;
 import pl.barmate.analyticsservice.repository.ChartRepository;
 import pl.barmate.analyticsservice.service.ChartServiceImpl;
 import pl.barmate.analyticsservice.service.PythonChartService;
-import pl.barmate.analyticsservice.service.RecipeServiceClient;
+import pl.barmate.analyticsservice.service.UserServiceClient;
 import pl.barmate.analyticsservice.dto.ChartHistoryDTO;
-import pl.barmate.analyticsservice.dto.ChartMapper;
 
 import java.util.*;
 
@@ -23,7 +22,7 @@ import static org.mockito.Mockito.*;
 public class ChartServiceImplTest {
 
     @Mock
-    private RecipeServiceClient recipeServiceClient;
+    private UserServiceClient userServiceClient;
 
     @Mock
     private PythonChartService pythonChartService;
@@ -46,7 +45,7 @@ public class ChartServiceImplTest {
         List<String> mockData = List.of("drink1", "drink2");
         byte[] expectedChart = new byte[]{1, 2, 3};
 
-        when(recipeServiceClient.getMostPopularRecipies(userId)).thenReturn(mockData);
+        when(userServiceClient.getMostPopularRecipies()).thenReturn(mockData);
         when(pythonChartService.generateChart(eq(type), eq(mockData))).thenReturn(expectedChart);
 
         byte[] result = chartService.generateChart(type, userId);
@@ -62,7 +61,7 @@ public class ChartServiceImplTest {
         List<String> mockData = List.of("drink1", "drink2");
         byte[] expectedChart = new byte[]{1, 2, 3};
 
-        when(recipeServiceClient.getMostPopularRecipies(userId)).thenReturn(mockData);
+        when(userServiceClient.getMostPopularRecipies()).thenReturn(mockData);
         when(pythonChartService.generateChart(eq(type), eq(mockData))).thenReturn(expectedChart);
 
         byte[] result = chartService.generateChart(type, userId);
@@ -78,7 +77,7 @@ public class ChartServiceImplTest {
         List<String> mockData = List.of("drink1", "drink2");
         byte[] expectedChart = new byte[]{1, 2, 3};
 
-        when(recipeServiceClient.getMostPopularRecipies(userId)).thenReturn(mockData);
+        when(userServiceClient.getMostPopularRecipies()).thenReturn(mockData);
         when(pythonChartService.generateChart(eq(type), eq(mockData))).thenReturn(expectedChart);
 
         byte[] result = chartService.generateChart(type, userId);
