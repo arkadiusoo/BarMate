@@ -117,16 +117,16 @@ class IngredientServiceTest {
 
         Ingredient ingredient = new Ingredient(1L, ingredientName, IngredientCategory.OTHER, initialAmount, "kg");
 
-        when(repository.findByName(ingredientName)).thenReturn(Optional.of(ingredient));
+        when(repository.findByNameAndUnit(ingredientName, "kg")).thenReturn(Optional.of(ingredient));
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        Optional<Ingredient> updatedIngredient = service.subtractIngredientAmount(ingredientName, amountToSubtract);
+        Optional<Ingredient> updatedIngredient = service.subtractIngredientAmount(ingredientName, "kg", amountToSubtract);
 
         // Then
         assertThat(updatedIngredient).isPresent();
         assertThat(updatedIngredient.get().getAmount()).isEqualTo(3.0);
-        verify(repository, times(1)).findByName(ingredientName);
+        verify(repository, times(1)).findByNameAndUnit(ingredientName, "kg");
         verify(repository, times(1)).save(ingredient);
     }
 
@@ -136,10 +136,10 @@ class IngredientServiceTest {
         String ingredientName = "Unknown";
         double amountToSubtract = 1.0;
 
-        when(repository.findByName(ingredientName)).thenReturn(Optional.empty());
+        when(repository.findByNameAndUnit(ingredientName, "l")).thenReturn(Optional.empty());
 
         // Then
-        assertThatThrownBy(() -> service.subtractIngredientAmount(ingredientName, amountToSubtract))
+        assertThatThrownBy(() -> service.subtractIngredientAmount(ingredientName, "l", amountToSubtract))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("Ingredient not found with name: " + ingredientName);
     }
@@ -153,14 +153,14 @@ class IngredientServiceTest {
 
         Ingredient ingredient = new Ingredient(1L, ingredientName, IngredientCategory.OTHER, initialAmount, "kg");
 
-        when(repository.findByName(ingredientName)).thenReturn(Optional.of(ingredient));
+        when(repository.findByNameAndUnit(ingredientName, "kg")).thenReturn(Optional.of(ingredient));
 
         // Then
-        assertThatThrownBy(() -> service.subtractIngredientAmount(ingredientName, amountToSubtract))
+        assertThatThrownBy(() -> service.subtractIngredientAmount(ingredientName, "kg", amountToSubtract))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Insufficient amount of ingredient: " + ingredientName);
 
-        verify(repository, times(1)).findByName(ingredientName);
+        verify(repository, times(1)).findByNameAndUnit(ingredientName, "kg");
         verify(repository, times(0)).save(any());
     }
 
@@ -170,11 +170,11 @@ class IngredientServiceTest {
         Ingredient vodkaFromDb = new Ingredient(1L, "Vodka", IngredientCategory.ALCOHOL, 10.0, "ml");
         Ingredient limeFromDb = new Ingredient(2L, "Lime", IngredientCategory.FRUIT, 5.0, "pcs");
 
-        Ingredient vodkaRequest = new Ingredient(null, "Vodka", null, 5.0, null); // wystarczy
-        Ingredient limeRequest = new Ingredient(null, "Lime", null, 10.0, null); // brakuje
+        Ingredient vodkaRequest = new Ingredient(null, "Vodka", null, 5.0, "ml"); // wystarczy
+        Ingredient limeRequest = new Ingredient(null, "Lime", null, 10.0, "pcs"); // brakuje
 
-        when(repository.findByName("Vodka")).thenReturn(Optional.of(vodkaFromDb));
-        when(repository.findByName("Lime")).thenReturn(Optional.of(limeFromDb));
+        when(repository.findByNameAndUnit("Vodka", "ml")).thenReturn(Optional.of(vodkaFromDb));
+        when(repository.findByNameAndUnit("Lime", "pcs")).thenReturn(Optional.of(limeFromDb));
 
         // When
         List<Ingredient> result = service.checkIngredientShortages(List.of(vodkaRequest, limeRequest));

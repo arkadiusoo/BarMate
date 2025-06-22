@@ -1,10 +1,10 @@
-package pl.barmate.cocktails;
+package pl.barmate.web;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class DrinkServiceApplicationTests {
+class WebApplicationTests {
 
     @Test
     void contextLoads() {

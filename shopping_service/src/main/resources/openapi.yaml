@@ -1,0 +1,227 @@
+openapi: 3.0.3
+info:
+  title: BarMate Shopping List API
+  version: 1.0.0
+  description: API do zarządzania listami zakupów w aplikacji BarMate.
+
+paths:
+  /shopping-list/{id}:
+    get:
+      summary: Get a shopping list by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista zakupów znaleziona
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListDTO'
+        '404':
+          description: Lista nie znaleziona
+
+    put:
+      summary: Update a shopping list
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShoppingListDTO'
+      responses:
+        '200':
+          description: Zaktualizowana lista zakupów
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListDTO'
+
+    delete:
+      summary: Delete a shopping list
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Lista usunięta
+
+  /shopping-list/user/{id}:
+    get:
+      summary: Get shopping lists by user id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Listy użytkownika
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShoppingListDTO'
+
+  /shopping-list:
+    post:
+      summary: Create a shopping list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: integer
+              description: User ID
+      responses:
+        '201':
+          description: Lista utworzona
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListDTO'
+
+  /shopping-list/with-items:
+    post:
+      summary: Create a list with shopping items
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                shoppingItemsDTO:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ShoppingItemDTO'
+      responses:
+        '201':
+          description: Lista i produkty utworzone
+
+  /shopping-list/{id}/items:
+    post:
+      summary: Add an item to a shopping list
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShoppingItemDTO'
+      responses:
+        '201':
+          description: Produkt dodany
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingItemDTO'
+
+  /shopping-list/{id}/items/{itemId}:
+    delete:
+      summary: Delete an item from a shopping list
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Produkt usunięty
+
+  /shopping-list/{listId}/items:
+    get:
+      summary: Get items from a specific shopping list
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista produktów
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShoppingItemDTO'
+
+  /shopping-list/{list_id}/item/{id}:
+    put:
+      summary: Check off a shopping item
+      parameters:
+        - name: list_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Produkt oznaczony jako kupiony
+
+components:
+  schemas:
+    ShoppingListDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShoppingItemDTO'
+        dateCreated:
+          type: string
+          format: date
+
+    ShoppingItemDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        quantity:
+          type: number
+        unit:
+          type: string
+        checked:
+          type: boolean
+        shoppingListId:
+          type: integer
