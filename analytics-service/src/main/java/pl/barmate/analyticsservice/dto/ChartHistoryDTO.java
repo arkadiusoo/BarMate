@@ -6,7 +6,7 @@ import java.util.Date;
 
 public record ChartHistoryDTO (
     Long id,
-    Long userId,
+    String userName,
     Date created,
     String chartName,
     ChartType chartType

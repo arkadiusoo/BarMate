@@ -7,7 +7,7 @@ public class ChartMapper {
     public static ChartHistoryDTO toHistoryDTO(Chart chart) {
         return new ChartHistoryDTO(
                 chart.getId(),
-                chart.getUserId(),
+                chart.getUserName(),
                 chart.getCreated(),
                 chart.getChartName(),
                 chart.getChartType()
@@ -19,7 +19,7 @@ public class ChartMapper {
 
         return Chart.builder()
                 .id(dto.id())
-                .userId(dto.userId())
+                .userName(dto.userName())
                 .created(dto.created())
                 .chartName(dto.chartName())
                 .chartType(dto.chartType())

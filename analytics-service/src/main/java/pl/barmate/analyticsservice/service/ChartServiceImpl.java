@@ -23,15 +23,15 @@ public class ChartServiceImpl implements ChartService {
     private final ChartRepository chartRepository;
 
     @Override
-    public byte[] generateChart(ChartType chartType, Long userId) {
+    public byte[] generateChart(ChartType chartType, String userId, String userName) {
         if (chartType == null) {
             throw new IllegalArgumentException("Chart type must be provided");
         }
         // 1. get data from recipe-service
         Object chartInputData = switch (chartType) {
-            case TheMostPopularRecipies -> userServiceClient.getMostPopularRecipies();
-            case TheMostPopularIngredients -> userServiceClient.getMostPopularIngredients();
-            case ConsuptionInTime -> userServiceClient.getConsuptionInTime();
+            case TheMostPopularRecipies -> userServiceClient.getMostPopularRecipies(userId);
+            case TheMostPopularIngredients -> userServiceClient.getMostPopularIngredients(userId);
+            case ConsuptionInTime -> userServiceClient.getConsuptionInTime(userId);
             default -> throw new IllegalArgumentException("Unsupported chart type: " + chartType);
         };
 
@@ -40,7 +40,7 @@ public class ChartServiceImpl implements ChartService {
 
         // 3. save chart datq to db
         Chart chart = Chart.builder()
-                .userId(userId)
+                .userName(userName)
                 .chartType(chartType)
                 .chartName("Wykres " + chartType.name())
                 .chartData(jsonData)
@@ -88,13 +88,13 @@ private Object deserializeFromJson(String json, ChartType chartType) {
     }
 }
     @Transactional(readOnly = true)
-    public List<ChartHistoryDTO> getUserChartHistory(Long userId) {
-        List<ChartHistoryDTO> charts = chartRepository.findAllByUserId(userId).stream()
+    public List<ChartHistoryDTO> getUserChartHistory(String userName) {
+        List<ChartHistoryDTO> charts = chartRepository.findAllByUserName(userName).stream()
                 .map(ChartMapper::toHistoryDTO)
                 .toList();
 
         if (charts.isEmpty()) {
-            throw new IllegalArgumentException("User with id " + userId + " not found or has no charts");
+            throw new IllegalArgumentException("User with name " + userName + " not found or has no charts");
         }
 
         return charts;

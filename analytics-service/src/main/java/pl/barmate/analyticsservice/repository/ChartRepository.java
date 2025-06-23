@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface ChartRepository extends JpaRepository<Chart, Long> {
-    List<Chart> findAllByUserId(Long userId);
+    List<Chart> findAllByUserName(String userName);
 }

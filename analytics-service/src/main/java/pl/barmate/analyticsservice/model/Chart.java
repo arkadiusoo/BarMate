@@ -19,7 +19,7 @@ public class Chart {
     private Long id;
 
     @Column(nullable = false)
-    private Long userId;
+    private String userName;
 
     @Column(nullable = false)
     private Date created;

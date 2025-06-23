@@ -8,10 +8,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import pl.barmate.analyticsservice.dto.ChartHistoryDTO;
 import pl.barmate.analyticsservice.model.ChartType;
 import pl.barmate.analyticsservice.service.ChartService;
+import pl.barmate.analyticsservice.service.UserServiceClient;
 
 import java.util.List;
 
@@ -22,6 +26,7 @@ import java.util.List;
 public class ChartController {
 
     private final ChartService chartService;
+    private final UserServiceClient userService;
 
     @Operation(
         summary = "Generate chart from user's data.",
@@ -47,10 +52,11 @@ public class ChartController {
 
     @GetMapping(value = "/generate", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> generateNewChart(
-            @RequestParam ChartType chartType,
-            @RequestParam Long userId) {
+            @AuthenticationPrincipal Jwt jwt, @RequestParam ChartType chartType) {
         try {
-            byte[] image = chartService.generateChart(chartType, userId);
+            String token = jwt.getTokenValue();
+            String username = jwt.getClaimAsString("preferred_username");
+            byte[] image = chartService.generateChart(chartType, token, username);
             return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(image);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(404).build();
@@ -118,14 +124,21 @@ public class ChartController {
         )
     })
     @GetMapping("/history")
-    public ResponseEntity<List<ChartHistoryDTO>> getUserHistory(@RequestParam Long userId) {
+    public ResponseEntity<List<ChartHistoryDTO>> getUserHistory(@AuthenticationPrincipal Jwt jwt, @RequestParam Long userId) {
+        String userName = jwt.getClaimAsString("preferred_username");
         try {
-            return ResponseEntity.ok(chartService.getUserChartHistory(userId));
+            return ResponseEntity.ok(chartService.getUserChartHistory(userName));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(404).build();
         } catch (Exception ex) {
             return ResponseEntity.status(500).build();
         }
-
 }
+
+    @GetMapping("/popular")
+    public ResponseEntity<Object> getMostPopularRecipies(JwtAuthenticationToken authentication) {
+        String token = authentication.getToken().getTokenValue();
+        Object data = userService.getMostPopularRecipies(token);
+        return ResponseEntity.ok(data);
+    }
 }

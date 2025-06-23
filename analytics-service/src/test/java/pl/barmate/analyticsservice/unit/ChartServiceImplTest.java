@@ -45,7 +45,7 @@ public class ChartServiceImplTest {
         List<String> mockData = List.of("drink1", "drink2");
         byte[] expectedChart = new byte[]{1, 2, 3};
 
-        when(userServiceClient.getMostPopularRecipies()).thenReturn(mockData);
+        //when(userServiceClient.getMostPopularRecipies()).thenReturn(mockData);
         when(pythonChartService.generateChart(eq(type), eq(mockData))).thenReturn(expectedChart);
 
         byte[] result = chartService.generateChart(type, userId);
@@ -61,7 +61,7 @@ public class ChartServiceImplTest {
         List<String> mockData = List.of("drink1", "drink2");
         byte[] expectedChart = new byte[]{1, 2, 3};
 
-        when(userServiceClient.getMostPopularRecipies()).thenReturn(mockData);
+        //when(userServiceClient.getMostPopularRecipies()).thenReturn(mockData);
         when(pythonChartService.generateChart(eq(type), eq(mockData))).thenReturn(expectedChart);
 
         byte[] result = chartService.generateChart(type, userId);
@@ -77,7 +77,7 @@ public class ChartServiceImplTest {
         List<String> mockData = List.of("drink1", "drink2");
         byte[] expectedChart = new byte[]{1, 2, 3};
 
-        when(userServiceClient.getMostPopularRecipies()).thenReturn(mockData);
+        //when(userServiceClient.getMostPopularRecipies()).thenReturn(mockData);
         when(pythonChartService.generateChart(eq(type), eq(mockData))).thenReturn(expectedChart);
 
         byte[] result = chartService.generateChart(type, userId);

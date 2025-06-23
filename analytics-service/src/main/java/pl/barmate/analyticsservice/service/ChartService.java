@@ -6,8 +6,8 @@ import pl.barmate.analyticsservice.model.ChartType;
 import java.util.List;
 
 public interface ChartService {
-    byte[] generateChart(ChartType chartType, Long userId);
+    byte[] generateChart(ChartType chartType, String userId, String username);
     byte[] regenerateChartFromHistory(Long chartId);
 
-    List<ChartHistoryDTO> getUserChartHistory(Long userId);
+    List<ChartHistoryDTO> getUserChartHistory(String userName);
 }
