@@ -17,6 +17,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/me")
 @RequiredArgsConstructor
+@CrossOrigin
 public class UserController {
 
     private final UserService userService;

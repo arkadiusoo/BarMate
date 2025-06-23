@@ -28,11 +28,10 @@ public class UserService {
     final private DrinkHistoryRepository drinkHistoryRepository;
     final private RestTemplate restTemplate;
 
-    public void addUserProfile(Long keycloakId, String username, String email) {
+    public void addUserProfile(String username, String email) {
         UserProfile userProfile = new UserProfile();
         userProfile.setUsername(username);
         userProfile.setEmail(email);
-        userProfile.setUserId(keycloakId);
         userProfile.setUserPreferences(new UserPreferences());
         userProfileRepository.save(userProfile);
     }
